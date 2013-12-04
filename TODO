@@ -1,0 +1,29 @@
+METADATA RESOURCES
+=================
+
+1. information_schema.columns
+     - gives column, default value (if any), nullable, data type etc.
+2. given schema and table name, the following query returns all columns along with useful informations:
+
+SELECT ordinal_position, tab_columns.column_name, data_type, character_maximum_length,
+numeric_precision, is_nullable, tab_constraints.constraint_type, col_constraints.constraint_name,
+col_check_constraints.check_clause
+FROM information_schema.columns AS tab_columns
+LEFT OUTER JOIN
+information_schema.constraint_column_usage AS col_constraints
+ON tab_columns.table_name = col_constraints.table_name AND
+tab_columns.column_name = col_constraints.column_name
+LEFT OUTER JOIN
+information_schema.table_constraints AS tab_constraints
+ON tab_constraints.constraint_name = col_constraints.constraint_name
+LEFT OUTER JOIN
+information_schema.check_constraints AS col_check_constraints
+ON col_check_constraints.constraint_name = tab_constraints.constraint_name
+WHERE tab_columns.table_name = 'author' AND
+tab_columns.table_schema = 'public'
+ORDER BY ordinal_position;
+
+3. And this gives user-defined tables (not sure if it is reliable):
+
+SELECT table_name FROM information_schema.tables
+WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema'); 

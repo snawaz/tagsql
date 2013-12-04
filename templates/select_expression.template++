@@ -1,0 +1,34 @@
+
+
+#pragma once
+
+__BEGIN_HEADER__
+
+#include <memory>
+
+#include <__NAMESPACE__/from_expression.h++>
+
+#include <pqxx/pqxx>
+
+__END_HEADER__
+
+__BEGIN_NAMESPACE__
+
+template<typename SelectedColumnsTuple>
+class select_expression 
+{
+    public: 
+
+	select_expression(std::shared_ptr<pqxx::connection> & connection)
+	    : _connection(connection) {}
+
+	template<typename Table>
+	auto from() -> from_expression<Table,SelectedColumnsTuple>
+	{
+	    return { _connection };
+	}
+    private:
+	std::shared_ptr<pqxx::connection> _connection;
+};
+
+__END_NAMESPACE__

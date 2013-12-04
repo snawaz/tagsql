@@ -1,0 +1,25 @@
+
+
+#pragma once
+
+__BEGIN_HEADER__
+
+#include <string>
+
+__END_HEADER__
+
+__BEGIN_NAMESPACE__
+
+struct condition
+{
+    std::string _value;
+
+    condition(std::string value) : _value(std::move(value)) {}
+
+    condition operator && (condition cond) const
+    {
+	return {_value + " AND " + cond._value };
+    }
+};
+
+__END_NAMESPACE__

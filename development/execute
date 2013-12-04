@@ -1,0 +1,10 @@
+Binary file ./.from_expression.h++.swp matches
+./from_expression.h++:51:                return {this->_connection, _query_without_select};
+./from_expression.h++:56:                return {this->_connection, _query_without_select};
+./from_expression.h++:90:                return this->execute(implied_select(), _query_without_select);
+./cross_expression.h++:44:            return { this->_connection, _query_without_select };
+./cross_expression.h++:58:            return this->execute(implied_select(), _query_without_select);
+Binary file ./.join_expression.h++.swp matches
+./join_expression.h++:53:            return {this->_connection};
+./join_expression.h++:80:            return this->execute(implied_select(), _query_without_select);
+./poc/backup_1_column.cpp:118:		return this->operator()();

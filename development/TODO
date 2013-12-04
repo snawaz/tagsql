@@ -1,0 +1,60 @@
+Syntax
+======
+
+	auto items = dc.select(name, age).from(person).where(qualification == "BA");
+	
+	OR
+
+	auto items = dc.select(person.name, person.age).from(person).where(person.qualification == "BA");
+
+
+	OR
+
+	
+	auto query = query::select(name, age).from(person).join(book).on(book.author_id == person.person_id).where(qualification == "BA");
+
+
+	auto items = query.use(db);      //use on db connection
+
+	auto items = query.use(persons,authors); //reuse on local source
+
+
+Features
+=======
+
+	- Type-safety.
+	- Constraint checks (throughout).
+	- Easy access.
+	- Deferred execution.
+	- Different types of data sources: DB collections as well as in-memory collections.
+	- Query reuse.
+
+
+TODO (implementation details)
+====
+
+	- Checks should be done at all stages, for all tags - select, where, and on.
+
+		auto items = dc.select(author.name).from(author).where(person.person_id == 100);
+		auto items = dc.select(person.name).from(author).where(author.author_id == 100);
+		auto items = dc.select(person.name, author.name).from(author).join(person).on(person.person_id == book.author_id);
+		auto items = dc.select(person.name, author.name).from(author).join(person).on(author.author_id == person.person_id);
+
+		All of these MUST FAIL at compile-time:
+			- the first will fail, because wrong table is used in where().
+			- the second will fail, because wrong table is used in select().
+			- the third will fail, because in on() book is not captured, neither in from(), nor in join().
+			- the fourth will fail, because person is not used in on().
+		
+		auto items = dc.select(person.name, person.name).from(person);
+
+		MUST FAIL at compile-time because:
+			- duplicate columns appear in the select-clause.
+
+	- The definition of tables must be syntactic sugar, which means they must derive from named_tuple, so that generalized code can be written. 
+	  For example, a single implementation of std::ostream<< would work for all tables, as well as for named_tuples!
+	  	
+	  	struct person : named_tuple<pt::name_t, 
+		                            pt::age_t, 
+									pt::qualification_t>{};
+
