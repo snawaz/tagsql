@@ -21,12 +21,14 @@
 
 namespace tagsql { namespace development
 {
-    
     struct parse_exception : std::runtime_error
     {
         using std::runtime_error::runtime_error;
     };
-    
+   
+	template<typename ...Tags>
+	struct named_tuple;
+
     template<typename Tag>
     class column : public Tag::sql_data_type::template operators<Tag>
     {
@@ -83,10 +85,19 @@ namespace tagsql { namespace development
             {
                 return set(::foam::none);
             }
-    
+   
+			//value access using method => T v = item.value;
             value_type const & value() const { return *_data; }
             value_type & value()  { return *_data; }
-    
+
+			//value access using function-style call => T v = item();
+            value_type const & operator()() const { return value(); }
+            value_type & operator()()  { return value(); }
+			
+			//value access by implicit conversoon => T v = item;
+			operator value_type const & () const { return value(); }
+			operator value_type& () { return value(); }
+
             bool is_null() const 
             { 
                 return _data == ::foam::none; 
@@ -108,6 +119,9 @@ namespace tagsql { namespace development
                 else return out << "NULL";
             }
         private:
+			template<typename ...Tags>
+			friend class named_tuple;
+
             template<typename U>
             column& set(U && value)
             {
@@ -117,7 +131,7 @@ namespace tagsql { namespace development
             }
         private:
             ::foam::optional<value_type> _data;
-            bool                        _null_has_been_set = false;
+            bool                         _null_has_been_set = false;
     };
     
 

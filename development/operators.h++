@@ -16,7 +16,7 @@ namespace tagsql { namespace development
 				return t == u;
 			}
 
-			static constexpr char const * name = "=";
+			static constexpr char const * operator_symbol = "=";
 
 			using literal_type = typename Tag::column_type;
 
@@ -42,7 +42,7 @@ namespace tagsql { namespace development
 				return t == u;
 			}
 
-			static constexpr char const * name = "LIKE";
+			static constexpr char const * operator_symbol = "LIKE";
 
 			using literal_type = typename Tag::column_type;
 

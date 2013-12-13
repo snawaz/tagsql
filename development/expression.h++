@@ -68,7 +68,7 @@ namespace tagsql { namespace development
 
 		std::string repr() const
 		{
-			static std::string value = _left.repr() + " " +  Operator::name + " " + _right.repr();
+			static std::string value = _left.repr() + " " +  Operator::operator_symbol + " " + _right.repr();
 			return value;
 		}
 

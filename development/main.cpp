@@ -18,7 +18,7 @@ std::ostream& operator<<(std::ostream & out, tagsql::development::deferred_range
 template<typename NamedTuple, int ...N>
 std::ostream & print_named_tuple(std::ostream & out, NamedTuple const & t, ::foam::meta::seq<N...> )
 {
-    int x[] = {(out << (N? " , ":"{") << t.template at<N>(), 0)...};
+    int x[] = {(out << (N? ", ":"{") << t.template at<N>(), 0)...};
     (void)x;
     return out << "}"; 
 }
@@ -29,19 +29,29 @@ std::ostream & operator << (std::ostream & out, tagsql::development::named_tuple
     return print_named_tuple(out, t, ::foam::meta::make_seq<Tags...>());
 }
 
-const tagsql::development::schema::author_t author;
-const tagsql::development::schema::book_t book;
-const tagsql::development::schema::review_t review;
+const tagsql::development::schema::author_t author{};
+const tagsql::development::schema::book_t book{};
+const tagsql::development::schema::review_t review{};
 
-void f(tagsql::development::named_tuple<tagsql::development::author_tag::name_t, tagsql::development::author_tag::age_t> item)
+using namespace tagsql::development;
+
+void f(named_tuple<author_tag::name_t, author_tag::age_t> item)
 {
-	std::cout << "item : " << item.name << item.age << std::endl;
+	//std::cout << "f() => " << item.name << "," << item.age << std::endl;
+	std::cout << "f() => " << item.at<0>() <<"," << item[author_tag::age] << std::endl;
 }
 
-//void g(tagsql::development::named_tuple<tagsql::development::author_tag::name_t, tagsql::development::author_tag::created_t> item)
-void g(tagsql::development::named_tuple<tagsql::development::author_tag::name_t> item)
+void h(named_tuple<author_tag::age_t, author_tag::name_t> item)
 {
-	std::cout << "item : " << item.name << std::endl;
+	//std::cout << "h() => " << item.age << "," << item.name << std::endl;
+	std::cout << "h() => " << item << std::endl;
+}
+
+//void g(named_tuple<author_tag::name_t, author_tag::created_t> item)
+void g(named_tuple<author_tag::name_t> item)
+{
+	//std::cout << "g() => " << item.name << std::endl;
+	std::cout << "g() => " << item << std::endl;
 }
 
 
@@ -56,6 +66,7 @@ void test_select(tagsql::development::data_context & dc)
 				   .where(author.name.like("Sha%"));
 
 	f(*items.begin());
+	h(*items.begin());
 	g(*items.begin());
 				   //.where(author.age == 30);
 	//auto items = dc.select(at::name, at::age, bt::title).from(author).where(author.author_id == 30);
@@ -83,7 +94,7 @@ void test_join(tagsql::development::data_context & dc)
 	auto items = dc.select(at::name, bt::title)
 				   .from(author)
 				   .join(book).on(bt::author_id == at::author_id);
-#else 
+#elif 0 
 	//auto items = dc.select(at::name, at::age)
 	auto items = dc.select(at::name, bt::title, rt::comment)
 				   .from(author)
@@ -91,8 +102,8 @@ void test_join(tagsql::development::data_context & dc)
 				   .inner_join(review).on(review.reviewer_id == author.author_id);
 
 #endif
-#if 1
-	std::cout << items << std::endl;
+#if 0
+	sd::cout << items << std::endl;
 #endif 
 
 }

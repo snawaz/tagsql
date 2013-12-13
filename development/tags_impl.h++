@@ -213,6 +213,12 @@ namespace tagsql { namespace development
         {
             using base = metaspace::meta_column_t<schema::author_t,short,true,false>;
 			using sql_data_type = support::types::single<support::types::smallint_t>;
+			
+			template<typename T>
+			struct named_member
+			{
+				T age;
+			};
 
             short age;
 
@@ -238,6 +244,12 @@ namespace tagsql { namespace development
         {
             using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = support::types::multi<support::types::character_t, 64>;
+
+			template<typename T>
+			struct named_member
+			{
+				T name;
+			};
 
             std::string name;
 
