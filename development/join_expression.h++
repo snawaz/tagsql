@@ -17,65 +17,38 @@
 #include <tagsql/development/meta_column.h++>
 #include <tagsql/development/tags.h++>
 #include <tagsql/development/deferred_range.h++>
+#include <tagsql/development/on_expression.h++>
 #include <pqxx/pqxx>
 
 
 namespace tagsql { namespace development
 {
-    template<sql_join_type JoinType, typename TableList, typename SelectedColumnsTuple>
-    //class join_expression : public deferred_range<typename detail::row_type<TableList, SelectedColumnsTuple>::type>
-    class join_expression : public deferred_range<join_expression<JoinType, TableList, SelectedColumnsTuple>>
-    {
-            //using base = deferred_range<typename detail::row_type<TableList, SelectedColumnsTuple>::type>;
-    		using base =  deferred_range<join_expression<JoinType, TableList, SelectedColumnsTuple>>;
-            using table_type = typename TableList::template at<TableList::size-1>::type;
-        public: 
-            using value_type = typename base::value_type;
-            //using value_type = typename detail::row_type<TableList, SelectedColumnsTuple>::type;
-            using implied_select = typename detail::row_type<TableList, SelectedColumnsTuple>::modified_tuple;
+	template<typename Bucket>
+	class join_expression 
+	{
+			using table_type = typename Bucket::join_tables::template at<Bucket::join_tables::size-1>::type;
+		public:
     
-        join_expression(std::shared_ptr<pqxx::connection> & connection, std::string query_without_select)
-            : base(connection), _query_without_select(query_without_select) 
-        {
-            if ( JoinType == sql_join_type::inner) _query_without_select += " INNER JOIN " + metaspace::meta_table<table_type>::name();
-            else if ( JoinType == sql_join_type::left) _query_without_select += " LEFT JOIN " + metaspace::meta_table<table_type>::name();
-            else if ( JoinType == sql_join_type::right) _query_without_select += " RIGHT JOIN " + metaspace::meta_table<table_type>::name();
-        }
-        template<typename OtherTable>
-        auto join() -> join_expression<sql_join_type::inner, typename TableList::template push_back<OtherTable>::type , SelectedColumnsTuple>
-        {
-            return {this->_connection};
-        }
-#if 0		
-        auto on(condition clause) 
-        {
-            _query_without_select += " ON " + clause._value;
-            return *this;
-        }
-#else
-        auto on(std::string clause) 
-        {
-            _query_without_select += " ON " + clause;
-            return *this;
-        }
-#endif		
-        auto limit(std::size_t count)
-        {
-            _query_without_select += " LIMIT " + std::to_string(count);
-            return *this;
-        }
-        auto exec() -> std::vector<value_type>
-        {
-            return deferred_exec(); 
-        }
-        std::vector<value_type>& deferred_exec()
-        {
-			//TableList x = 10;
-            return this->execute(implied_select(), _query_without_select, TableList());
-        }
-        private:
-        std::string                       _query_without_select;
+        	join_expression(std::shared_ptr<pqxx::connection> & connection, std::string query_without_select)
+            	: _connection(connection), _query_without_select(query_without_select)
+        	{
+				static const std::string token = Bucket::joins::template at<Bucket::joins::size-1>::type::join_type::token;
+				_query_without_select +=  " " + token + "  " + metaspace::meta_table<table_type>::name();
+        	}
+			
+			template<typename Condition>
+            auto on(Condition const & expr) -> on_expression<typename Bucket::template add_on<Condition>::type>
+            {
+				static_assert(is_condition_expression<Condition>::value, 
+						"Invalid Query : expression passed to on() is invalid. It must be a condition expression involving column(s).");
+				static_assert(expression_traits<Condition>::tables::template exists<table_type>::value, 
+						"Invalid Query : table mismatch for the condition passed to on().");
+
+                return { this->_connection, this->_query_without_select + " ON " + expr.repr() };
+            }
+		private:
+			std::shared_ptr<pqxx::connection> _connection;
+			std::string                       _query_without_select;
     };
     
-
 }} //tagsql # development

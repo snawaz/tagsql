@@ -59,13 +59,5 @@ namespace tagsql { namespace development
         static const author_id_t                      author_id;               //long int	non-nullable	primary_key	server_default
 
     } //author_tag
-    
-	namespace review_tag
-    {
-        static const review_id_t                    review_id;                //std::string	-	-	-
-        static const reviewer_id_t                  reviewer_id;                     //short	-	-	-
-        static const book_id_t                      book_id;                    //std::string	-	-	-
-        static const comment_t                      comment;               //long int	non-nullable	primary_key	server_default
-    }
 
 }} //tagsql # development

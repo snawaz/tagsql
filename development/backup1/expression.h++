@@ -33,12 +33,12 @@ namespace tagsql { namespace development
 
 		std::string repr() const
 		{
-			return _repr( std::is_arithmetic<ValueType>() );
+			return _repr(_value);
 		}
 
-		std::string _repr(std::false_type) const { std::ostringstream ss; ss << _value; return "'" + ss.str() + "'"; }
+		std::string _repr(std::string const &) const { return _value; }
 
-		std::string _repr(std::true_type) const { return std::to_string(_value); }
+		std::string _repr(...) const { return std::to_string(_value); }
 	};
 
 	struct and_t

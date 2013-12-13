@@ -14,9 +14,8 @@ namespace tagsql { namespace development
     {
         struct book_t;
         struct author_t;
-		struct review_t;
-    
-	} //schema
+
+    } //schema
 
     namespace book_tag
     {
@@ -277,72 +276,5 @@ namespace tagsql { namespace development
 
 
     } //author_tag
-	
-	namespace review_tag
-    {
-        struct review_id_t : metaspace::meta_column_t<schema::review_t, long int, false, true>
-		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false,true>;
-			using sql_data_type = support::types::single<support::types::bigserial_t>;
-
-            long int review_id;
-
-            review_id_t() : base("review_id"){}
-
-            void set(long int value) { review_id = std::move(value); }
-
-            long int const & get() const { return review_id; }
-
-            static char const* type_name() { return "long int"; }
-		};
-
-        struct reviewer_id_t  :  metaspace::meta_column_t<schema::review_t, long int, false, false>
-		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false,false>;
-			using sql_data_type = support::types::single<support::types::bigint_t>;
-
-            long int reviewer_id;
-
-            reviewer_id_t() : base("reviewer_id"){}
-
-            void set(long int value) { reviewer_id = std::move(value); }
-
-            long int const & get() const { return reviewer_id; }
-
-            static char const* type_name() { return "long int"; }
-		};
-
-        struct book_id_t :  metaspace::meta_column_t<schema::review_t, long int, false, false>
-		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false, false>;
-			using sql_data_type = support::types::single<support::types::bigint_t>;
-
-            long int book_id;
-
-            book_id_t() : base("book_id"){}
-
-            void set(long int value) { book_id = std::move(value); }
-
-            long int const & get() const { return book_id; }
-
-            static char const* type_name() { return "long int"; }
-		};
-
-        struct comment_t :  metaspace::meta_column_t<schema::review_t, std::string, true, false>
-		{
-            using base = metaspace::meta_column_t<schema::review_t, std::string,true,false>;
-			using sql_data_type = support::types::multi<support::types::character_t, 2048>;
-
-			std::string comment;
-
-            comment_t() : base("comment"){}
-
-            void set(std::string value) { comment = std::move(value); }
-
-			std::string const & get() const { return comment; }
-
-            static char const* type_name() { return "std::string"; }
-		};
-    }
 
 }} //tagsql # development

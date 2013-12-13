@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <tagsql/development/bucket.h++>
+
 #include <tagsql/development/formatter.h++>
 #include <tagsql/development/update_expression.h++>
 #include <tagsql/development/select_expression.h++>
@@ -52,9 +52,8 @@ namespace tagsql { namespace development
 			}
 
         //select
-        template<typename ... Columns>
-        auto select(Columns ... ) -> select_expression<bucket<::std::tuple<Columns...>>>
-        //auto select(Columns ... ) -> select_expression<bucket<::foam::meta::typelist<Columns...>>>
+        template<typename ... SelectedColumns>
+        auto select(SelectedColumns ... columns) -> select_expression<std::tuple<SelectedColumns...>>
         {
             return {_connection };
         }

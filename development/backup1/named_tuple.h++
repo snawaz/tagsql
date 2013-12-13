@@ -30,17 +30,6 @@ namespace tagsql { namespace development
             {
                 sink { (Tags::set(values),0)... };
             }
-
-			//truncate to subset of OtherTags!
-			template<typename ...OtherTags>
-			named_tuple(named_tuple<OtherTags...> const & item)
-			{
-				using self_type = ::foam::meta::typelist<Tags...>;
-				using other_type = ::foam::meta::typelist<OtherTags...>;
-				static_assert(self_type::template is_sublist_of<other_type>::value, "Cannot be converted into the target named_tuple.");
-
-				sink { (Tags::set(item[Tags()]), 0)... };
-			}
     
             //tag-based access (non-const)
             template<typename Tag>
@@ -73,7 +62,6 @@ namespace tagsql { namespace development
                 static_assert( Index < taglist::size, "Index is out of range for named_tuple::at<>.");
                 return std::get<Index>(_tuple);
             }
-
         private:
             std::tuple<typename Tags::column_type...> _tuple;
     };

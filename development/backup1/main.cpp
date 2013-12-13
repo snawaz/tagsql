@@ -31,19 +31,6 @@ std::ostream & operator << (std::ostream & out, tagsql::development::named_tuple
 
 const tagsql::development::schema::author_t author;
 const tagsql::development::schema::book_t book;
-const tagsql::development::schema::review_t review;
-
-void f(tagsql::development::named_tuple<tagsql::development::author_tag::name_t, tagsql::development::author_tag::age_t> item)
-{
-	std::cout << "item : " << item.name << item.age << std::endl;
-}
-
-//void g(tagsql::development::named_tuple<tagsql::development::author_tag::name_t, tagsql::development::author_tag::created_t> item)
-void g(tagsql::development::named_tuple<tagsql::development::author_tag::name_t> item)
-{
-	std::cout << "item : " << item.name << std::endl;
-}
-
 
 void test_select(tagsql::development::data_context & dc)
 {
@@ -51,13 +38,7 @@ void test_select(tagsql::development::data_context & dc)
 	namespace at = tagsql::development::author_tag;
 	namespace bt = tagsql::development::book_tag;
 
-	auto items = dc.select(at::name, at::age)
-				   .from(author)
-				   .where(author.name.like("Sha%"));
-
-	f(*items.begin());
-	g(*items.begin());
-				   //.where(author.age == 30);
+	auto items = dc.select(at::name, at::age).from(author).where(author.age == 30);
 	//auto items = dc.select(at::name, at::age, bt::title).from(author).where(author.author_id == 30);
 	//auto items = dc.select(at::name, at::age).from(author).where(true); //book.author_id == 30);
 	//auto items = dc.select(at::name).from(author);//.where(book.author_id == 30);
@@ -77,7 +58,6 @@ void test_join(tagsql::development::data_context & dc)
 	using namespace tagsql::development::schema;
 	namespace at = tagsql::development::author_tag;
 	namespace bt = tagsql::development::book_tag;
-	namespace rt = tagsql::development::review_tag;
 
 #if 0
 	auto items = dc.select(at::name, bt::title)
@@ -85,10 +65,9 @@ void test_join(tagsql::development::data_context & dc)
 				   .join(book).on(bt::author_id == at::author_id);
 #else 
 	//auto items = dc.select(at::name, at::age)
-	auto items = dc.select(at::name, bt::title, rt::comment)
+	auto items = dc.select(at::name, bt::title)
 				   .from(author)
-				   .left_join(book).on(book.author_id == author.author_id)
-				   .inner_join(review).on(review.reviewer_id == author.author_id);
+				   .join(book).on(book.author_id == author.author_id);
 
 #endif
 #if 1

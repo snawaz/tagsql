@@ -36,17 +36,4 @@ namespace tagsql { namespace development { namespace metaspace
         static columns_tuple columns() { return {}; }
     };
 
-    template<>
-    struct meta_table<tagsql::development::schema::review_t> : public meta_table_base<tagsql::development::schema::review_t>
-    {
-        using  sequence_type = ::foam::meta::genseq_t<4>;
-        using  primary_key   = tagsql::development::review_tag::primary_key;
-        using  foreign_keys  = tagsql::development::review_tag::foreign_keys;
-        using  columns_tuple = tagsql::development::review_tag::all;
-        static std::string name() {  return "review"; }
-        static sequence_type index_sequence() { return {}; }
-        static constexpr std::size_t size() { return 4; }
-        static columns_tuple columns() { return {}; }
-	};
-
 }}} //tagsql # development # metaspace

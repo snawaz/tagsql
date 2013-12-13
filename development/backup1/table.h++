@@ -35,16 +35,6 @@ namespace tagsql { namespace development { namespace schema
         column <txzi2::author_id_t>                   author_id;               //long int	non-nullable	primary_key	server_default
     };
 
-    //This definition of schema for table 'author'.
-    namespace txzi3 = ::tagsql::development::review_tag;
-    struct review_t
-    {
-        column <txzi3::review_id_t>                    review_id;                //std::string	-	-	-
-        column <txzi3::reviewer_id_t>                  reviewer_id;                     //short	-	-	-
-        column <txzi3::book_id_t>                      book_id;                    //std::string	-	-	-
-        column <txzi3::comment_t>                      comment;               //long int	non-nullable	primary_key	server_default
-    };
-
     std::ostream& operator<<(std::ostream& out, book_t const & item)
     {
         return ::foam::strlib::print(out, "{0},{1},{2},{3},{4}", item.created,item.modified,item.author_id,item.title,item.book_id);
@@ -53,11 +43,6 @@ namespace tagsql { namespace development { namespace schema
     std::ostream& operator<<(std::ostream& out, author_t const & item)
     {
         return ::foam::strlib::print(out, "{0},{1},{2},{3},{4}", item.created,item.modified,item.age,item.name,item.author_id);
-    }
-
-    std::ostream& operator<<(std::ostream& out, review_t const & item)
-    {
-        return ::foam::strlib::print(out, "{0},{1},{2},{3}", item.review_id, item.reviewer_id, item.book_id, item.comment);
     }
 
 }}} //tagsql # development # schema
