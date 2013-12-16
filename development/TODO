@@ -30,47 +30,42 @@ Features
 	- Query reuse.
 
 
-DONE LIST
-======== 
-
-	- clause
-		
-	- features
-		
-
 TODO LIST
 =========
 
 	- clause
-		- select
-		- from
-		- join {inner, left, right, full, cross}
-		- on
-		- where
-		- group by
-		- having
-		- order by
-		- limit
-		- offset
-		- fetch
+		- select                                     - DONE
+		- from                                       - DONE
+		- join {inner, left, right, full, cross}     - DONE 
+		- on                                         - DONE
+		- where                                      - DONE
+		- group by                                   -
+		- having                                     -
+		- order by { ASC | DESC }                    - DONE
+		- limit { count | ALL }                      - DONE
+		- offset                                     - DONE
+		- fetch                                      - DONE
 
 	- features
-		- implicit truncate conversion of named_tuple when target named_tuple has subset of source tags.
-		- std::ostream<< for named_tuple, and use default implementation for types which don't support <<.
-		- members of named_tuple should be column<tag>.
-		- various ways to access value from name_tuple
-			- member-based : column c = tuple.name; 
-			- tag-base  d  : column c = tuple[name];
-			- index-tagsed : column c = tuple.at<index>();
-		- various ways to access value from column
-			- member-function : T v = column.value();
-			- function-like   : T v = column();
-			- implicit conv   : T v = column; 
+		- implicit truncate conversion of named_tuple when target named_tuple has subset of source tags.   - DONE
+		- std::ostream<< for named_tuple, and use default implementation for types which don't support <<. - DONE
+		- members of named_tuple should be column<tag>.    - DONE
+		- various ways to access value from name_tuple     - DONE
+			- member-based : column c = tuple.name;        - DONE
+			- tag-base  d  : column c = tuple[name];       - DONE
+			- index-tagsed : column c = tuple.at<index>(); - DONE
+		- various ways to access value from column    - DONE
+			- member-function : T v = column.value(); - DONE
+			- function-like   : T v = column();       - DONE
+			- implicit conv   : T v = column;         - DONE
+
+	- design and implementations:
+		- implement table in terms of named_tuple   - DONE
 		
 		
 
-TODO (implementation details)
-====
+CHECK LIST
+==========
 
 	- Checks should be done at all stages, for all tags - select, where, and on.
 

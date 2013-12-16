@@ -8,6 +8,7 @@
 
 
 #include <foam/meta/typelist.h++>
+#include <foam/meta/seq.h++>
 
 #include <tagsql/development/column.h++>
 
@@ -16,23 +17,39 @@
 
 namespace tagsql { namespace development
 {
-    
+	const struct construct_from_field_t {} construct_from_field {}; //tag to identify correct overload for pqxx::field variadic arguments!
+
     template<typename ... Tags>
     class named_tuple : public Tags::template named_member<column<Tags>>...
     {
+			
+			template<typename ...OtherTags>
+			friend class named_tuple;
+
             struct sink
             {
                 template<typename ...T>
                 sink(T && ...) {}
             };
+
         public:
-            using taglist = ::foam::meta::typelist<Tags...>;
-    
-            named_tuple(typename Tags::column_type ... values) : _tuple(values...)
+            
+			using taglist = ::foam::meta::typelist<Tags...>;
+   
+			constexpr named_tuple() = default;
+
+			/*
+            explicit named_tuple(typename Tags::column_type ... values)
             {
-                //sink { (Tags::set(values),0)... };
-                
-				sink { reinterpret_cast<column<Tags>*>(static_cast<typename Tags::template named_member<column<Tags>>*>(this))->set(values) ...  }; 
+				sink { member<Tags>(values) ... }; 
+            }
+			*/
+
+			template<typename ... PQXXFields>
+            explicit named_tuple(construct_from_field_t, PQXXFields && ... fields)
+            {
+				static_assert(sizeof...(Tags) == sizeof...(PQXXFields), "Number of arguments to explicit named_tuple(...) is not same");
+				sink { member<Tags>(std::forward<PQXXFields>(fields)) ... }; 
             }
 
 			//truncate conversion to subset of OtherTags!
@@ -41,90 +58,110 @@ namespace tagsql { namespace development
 			{
 				using self_type = ::foam::meta::typelist<Tags...>;
 				using other_type = ::foam::meta::typelist<OtherTags...>;
-				static_assert(self_type::template is_sublist_of<other_type>::value, "Cannot be converted into the target named_tuple. Source must be superset or equal to target tags.");
+				static_assert(self_type::template is_sublist_of<other_type>::value, 
+						"Cannot be converted into the target named_tuple. Source must be superset or equal to target tags.");
 
-				//sink { (Tags::set(item[Tags()]), 0)... };
-				
-				sink { reinterpret_cast<column<Tags>*>(static_cast<typename Tags::template named_member<column<Tags>>*>(this))->set(item[Tags()]) ...  }; 
-				//auto & self = *this;
-				//sink { (self[Tags()] = item[Tags()]) ... }; 
+				sink { member<Tags>(item.template member<Tags>()) ...  }; 
 			}
    
-#if 0			
             //tag-based access (non-const)
             template<typename Tag>
-            auto operator[](Tag const &tag) -> typename Tag::column_type &
+            auto operator[](Tag const &tag) -> column<Tag> &
             {
-                return const_cast<typename Tag::column_type&>(static_cast<named_tuple const&>(*this)[tag]);
+				return get<Tag>();
             }
     
             //tag-based access (const)
             template<typename Tag>
-            auto operator[](Tag const &) const -> typename Tag::column_type const&
+            auto operator[](Tag const &) const -> column<Tag> const&
             {
-                constexpr auto index = taglist::template find<Tag>::value;
-                static_assert( index >= 0, "Invalid tag passed to named_tuple::operator[].");
-                return std::get<index>(_tuple);
-            }
-            //index-based access (non-const)
-            template<std::size_t Index>
-            auto & at() 
-            {
-                static_assert( Index < taglist::size, "Index is out of range for named_tuple::at<>.");
-                return std::get<Index>(_tuple);
-            }
-    
-            //index-based access (const)
-            template<std::size_t Index>
-            auto const & at() const
-            {
-                static_assert( Index < taglist::size, "Index is out of range for named_tuple::at<>.");
-                return std::get<Index>(_tuple);
-            }
-#endif
-
-            //tag-based access (non-const)
-            template<typename Tag>
-            auto operator[](Tag const &tag) -> typename Tag::column_type &
-            {
-                return const_cast<typename Tag::column_type&>(static_cast<named_tuple const&>(*this)[tag]);
-            }
-    
-            //tag-based access (const)
-            template<typename Tag>
-            auto operator[](Tag const &) const -> typename Tag::column_type const&
-            {
-                constexpr auto index = taglist::template find<Tag>::value;
-                static_assert( index >= 0, "Invalid tag passed to named_tuple::operator[].");
-                auto & member = *reinterpret_cast<column<Tag> const*>(static_cast<typename Tag::template named_member<column<Tag>> const*>(this));
-				return member.value();
+				return get<Tag>();
             }
 
             //index-based access (non-const)
             template<std::size_t Index>
-            auto & at() 
+            auto at() -> column<typename taglist::template at<Index>::type> &
             {
-				auto & x = static_cast<named_tuple const&>(*this).at<Index>();
-				return const_cast<typename std::remove_cv<decltype(x)>::type>(x);
+				using is_valid = std::integral_constant<bool, (Index < taglist::size) >;
+                static_assert(is_valid::value, "Index is out of range for named_tuple::at<>.");
+                return member<Index>(is_valid());
             }
     
             //index-based access (const)
             template<std::size_t Index>
-            auto const & at() const
+            auto at() const -> column<typename taglist::template at<Index>::type> &
             {
-                static_assert( Index < taglist::size, "Index is out of range for named_tuple::at<>.");
-                return get<Index>(std::integral_constant<bool, (Index < taglist::size)>());
+				using is_valid = std::integral_constant<bool, (Index < taglist::size) >;
+                static_assert(is_valid::value, "Index is out of range for named_tuple::at<>.");
+                return member<Index>(is_valid());
             }
-		private:	
-			template<std::size_t Index>
-			auto & get(std::true_type) const
-            {
-				return *this[typename taglist::template at<Index>::type()];
+		
+			//tag-type based
+			template<typename Tag>
+			auto get() -> column<Tag> &
+			{
+                constexpr auto index = taglist::template find<Tag>::value;
+                static_assert( index >= 0, "Invalid Tag passed to named_tuple::get<>().");
+				return member<Tag>();
 			}
-			void get(std::false_type); //no need to define
-        private:
-            std::tuple<typename Tags::column_type...> _tuple;  //GET RID OF THIS MEMBER!
+			template<typename Tag>
+			auto get() const -> column<Tag> const &
+			{
+                constexpr auto index = taglist::template find<Tag>::value;
+                static_assert( index >= 0, "Invalid Tag passed to named_tuple::get<>().");
+				return member<Tag>();
+			}
+
+		private:
+
+			//inspect members
+			template<typename Tag>
+			auto member() -> column<Tag> & 
+			{
+                return const_cast<column<Tag>&>(static_cast<named_tuple const&>(*this).member<Tag>());
+			}
+			template<typename Tag>
+			auto member() const -> column<Tag> const & 
+			{
+				using base_type = typename Tag::template named_member<column<Tag>>;
+                return reinterpret_cast<column<Tag> const&>(static_cast<base_type const&>(*this));
+			}
+			template<std::size_t Index>
+			auto member(std::true_type) -> column<typename taglist::template at<Index>::type> &
+            {
+				return member<typename taglist::template at<Index>::type>();
+			}
+			template<std::size_t Index>
+			auto member(std::true_type) const -> column<typename taglist::template at<Index>::type> const &
+            {
+				return member<typename taglist::template at<Index>::type>();
+			}
+
+			//modify members!
+			template<typename Tag, typename Other>
+			auto member(Other && other) -> column<Tag>&
+			{
+				using base_type = typename Tag::template named_member<column<Tag>>;
+                auto & self = reinterpret_cast<column<Tag>&>(static_cast<base_type&>(*this));
+				return self.set(std::forward<Other>(other));
+			}
     };
-    
+   
+	template<> class named_tuple<> {}; //full specialization
+
+	template<typename ... Tags>
+	std::ostream & operator << (std::ostream & out, named_tuple<Tags...> const & t)
+	{
+		using taglist = ::foam::meta::typelist<Tags...>;
+		using first = typename taglist::template at<0>::type;
+		using unpack = int[];
+    	unpack { (out << (std::is_same<Tags, first>::value? "{":", ") << t.template get<Tags>(), 0)... };
+    	return out << "}"; 
+	}
+	
+	std::ostream & operator << (std::ostream & out, named_tuple<> const &)
+	{
+		return out << "{}";
+	}
 
 }} //tagsql # development

@@ -53,12 +53,13 @@ namespace tagsql { namespace development { namespace metaspace
             using type = Table;
         };
     
+		/*
         template<typename Table, typename SingleColumn>
         struct row_type<Table, std::tuple<SingleColumn>>
         {
             using type = typename SingleColumn::column_type;
         };
-    
+		*/    
         template<typename Table, typename ... Columns>
         struct row_type<Table, std::tuple<Columns...>>
         {
@@ -97,18 +98,18 @@ namespace tagsql { namespace development { namespace metaspace
             }
     
             template<typename ColumnsTuple>
-            static auto columns_tuple(ColumnsTuple tuple)
+            static auto columns_tuple(ColumnsTuple tuple) //-> decltype(columns_tuple(tuple, std::is_same<typename row_type<ColumnsTuple>::type, Table>()))
             {
                 return columns_tuple(tuple, std::is_same<typename row_type<ColumnsTuple>::type, Table>());
             }
         private:
             template<typename ColumnsTuple>
-            static auto columns_tuple(ColumnsTuple tuple, std::true_type)
+            static auto columns_tuple(ColumnsTuple tuple, std::true_type) //-> decltype(meta_table<Table>::columns())
             {
                 return meta_table<Table>::columns();
             }
             template<typename ColumnsTuple>
-            static auto columns_tuple(ColumnsTuple tuple, std::false_type)
+            static auto columns_tuple(ColumnsTuple tuple, std::false_type) -> ColumnsTuple
             {
                 return tuple;
             }

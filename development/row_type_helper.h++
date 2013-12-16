@@ -16,17 +16,15 @@
 
 namespace tagsql { namespace development { namespace detail
 {
-    
     template<typename T>
     using bare_type_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
     
-    //column_types
-    template<typename ColumnsTuple>
-    struct column_types;
-    
-    template<typename ...Columns>
-    struct column_types<std::tuple<Columns...>> { using type = std::tuple<typename Columns::column_type...>; };
-    
+	template<typename T>
+	struct to_named_tuple;
+	
+	template<typename ...Tags>
+	struct to_named_tuple<std::tuple<Tags...>> { using type = named_tuple<Tags...>; } ;
+
     //all_columns_of_all_tables
     template<typename TableList>
     struct all_columns_of_all_tables;
@@ -34,10 +32,12 @@ namespace tagsql { namespace development { namespace detail
     template<typename ... Tables>
     struct all_columns_of_all_tables<::foam::meta::typelist<Tables...>> 
     {
-        using type = bare_type_t<decltype(std::tuple_cat(typename column_types<typename metaspace::meta_table<Tables>::columns_tuple>::type() ... ))>;
+		using stdtuple = bare_type_t<decltype(std::tuple_cat(typename metaspace::meta_table<Tables>::columns_tuple() ... ))>;
+		using type = typename to_named_tuple<stdtuple>::type;
         using modified_tuple = bare_type_t<decltype(std::tuple_cat(typename metaspace::meta_table<Tables>::columns_tuple() ... ))>;
     };
-    template<typename Table>
+    
+	template<typename Table>
     struct all_columns_of_all_tables<::foam::meta::typelist<Table>> 
     {
         using type = Table; 

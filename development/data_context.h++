@@ -40,7 +40,37 @@ namespace tagsql { namespace development
                                             ::tagsql::join(",", values));
         }
     }
-    
+   
+	template<typename Column>
+	auto _is_valid_select_arg_impl(typename Column::_is_tag *) -> std::true_type;
+	
+	template<typename Column>
+	auto _is_valid_select_arg_impl(...) -> std::false_type;
+
+	template<typename Column>
+	using _is_valid_select_arg = decltype(_is_valid_select_arg_impl<Column>(0));
+
+	template<typename Column>
+	struct get_tag
+	{
+		static_assert(_is_valid_select_arg<Column>::value, "Invalid tag in select()");
+	
+		template<typename T>
+		static auto tag_type(typename T::tag_type *) -> typename T::tag_type;
+		
+		template<typename T>
+		static auto tag_type(...) -> T;
+
+		using type = decltype(tag_type<Column>(0));
+	};
+	
+
+	template<typename ...Columns>
+	struct make_select_expression 
+	{
+		using type = select_expression<bucket<::std::tuple<typename get_tag<Columns>::type...>>>;
+	};
+
     class data_context 
     {
         public:
@@ -53,7 +83,7 @@ namespace tagsql { namespace development
 
         //select
         template<typename ... Columns>
-        auto select(Columns ... ) -> select_expression<bucket<::std::tuple<Columns...>>>
+        auto select(Columns ... ) -> typename make_select_expression<Columns...>::type
         //auto select(Columns ... ) -> select_expression<bucket<::foam::meta::typelist<Columns...>>>
         {
             return {_connection };

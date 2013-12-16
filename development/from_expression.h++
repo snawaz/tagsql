@@ -23,7 +23,6 @@
 #include <tagsql/development/join_expression.h++>
 #include <tagsql/development/where_expression.h++>
 #include <tagsql/development/deferred_range.h++>
-#include <tagsql/development/common_clauses.h++>
 
 #include <pqxx/pqxx>
 
@@ -31,7 +30,7 @@
 namespace tagsql { namespace development
 {
     template<typename Bucket>
-    class from_expression : public deferred_range<Bucket>, public clause_picker<Bucket>
+    class from_expression : public deferred_range<Bucket>
     {
             using base = deferred_range<Bucket>;
 			using select_tags = typename Bucket::select;
@@ -41,18 +40,16 @@ namespace tagsql { namespace development
             using implied_select = typename std::conditional<metaspace::meta_table<value_type>::is_table, columns_tuple, select_tags>::type;
     
             from_expression(std::shared_ptr<pqxx::connection> & connection)
-            : base(connection, " FROM " + metaspace::meta_table<typename Bucket::from>::name() ) { }
+            : base(connection, "FROM " + metaspace::meta_table<typename Bucket::from>::name() ) { }
 
-			/*
             template<typename OtherTable>
-            auto cross_join() -> cross_expression<typename Bucket::template add_join<OtherTable, join_type::cross>::type>
+            auto cross_join(OtherTable) -> cross_expression<typename Bucket::template add_join<OtherTable, join_type::cross>::type>
             {
-                return {this->_connection, _query_without_select};
+                return {this->_connection, this->_query_without_select};
             }
-			*/
 
             template<typename OtherTable>
-            auto inner_join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::inner>::type>
+            auto join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::inner>::type>
             {
                 return { this->_connection, this->_query_without_select };
             }
@@ -68,20 +65,12 @@ namespace tagsql { namespace development
             {
                 return { this->_connection, this->_query_without_select };
             }
-
-		#if 0
-			template<typename Condition>
-            auto where(Condition const & expr) -> where_expression<typename Bucket::template add_where<Condition>::type>
+	
+			template<typename OtherTable>
+            auto full_join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::full>::type>
             {
-				static_assert(is_condition_expression<Condition>::value, 
-						"Constraint Violation : expression passed to where() is invalid. It must be a condition expression involving column(s).");
-				static_assert(expression_traits<Condition>::tables::template exists<typename Bucket::from>::value, 
-						"Constraint Violation : table mismatch for the condition passed to from_expression::where().");
-
-                this->_query_without_select += " WHERE " + expr.repr();
-				return { this->_connection, this->_query_without_select };
+                return { this->_connection, this->_query_without_select };
             }
-		#endif
     };
     
 

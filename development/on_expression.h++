@@ -41,9 +41,15 @@ namespace tagsql { namespace development
             : base(connection, query) 
             { 
             }
+            
+			template<typename OtherTable>
+            auto cross_join(OtherTable) -> cross_expression<typename Bucket::template add_join<OtherTable, join_type::cross>::type>
+            {
+                return {this->_connection, this->_query_without_select};
+            }
 			
 			template<typename OtherTable>
-            auto inner_join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::inner>::type>
+            auto join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::inner>::type>
             {
                 return { this->_connection, this->_query_without_select };
             }
@@ -59,15 +65,12 @@ namespace tagsql { namespace development
             {
                 return { this->_connection, this->_query_without_select };
             }
-
-
-            /*
-			auto limit(std::size_t count) -> from_expression<Table, SelectedColumnsTuple> &
+	
+			template<typename OtherTable>
+            auto full_join(OtherTable) -> join_expression<typename Bucket::template add_join<OtherTable, join_type::full>::type>
             {
-                _query_without_select += " LIMIT " + std::to_string(count);
-                return *this;
+                return { this->_connection, this->_query_without_select };
             }
-			*/
     };
     
 

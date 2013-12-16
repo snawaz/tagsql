@@ -34,6 +34,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = support::types::single<support::types::timestamp_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T created;
+			};
+
             std::string created;
 
             created_t() : base("created"){}
@@ -58,6 +64,12 @@ namespace tagsql { namespace development
         {
             using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = support::types::single<support::types::timestamp_t>;
+
+			template<typename T>
+			struct named_member
+			{
+				T modified;
+			};
 
             std::string modified;
 
@@ -84,6 +96,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::book_t,long int,true,false>;
 			using sql_data_type = support::types::single<support::types::bigserial_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T author_id;
+			};
+
             long int author_id;
 
             author_id_t() : base("author_id"){}
@@ -109,6 +127,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = support::types::multi<support::types::character_varying_t, 128>;
 
+			template<typename T>
+			struct named_member
+			{
+				T title;
+			};
+
             std::string title;
 
             title_t() : base("title"){}
@@ -133,6 +157,12 @@ namespace tagsql { namespace development
         {
             using base = metaspace::meta_column_t<schema::book_t,long int,false,true>;
 			using sql_data_type = support::types::single<support::types::bigserial_t>;
+
+			template<typename T>
+			struct named_member
+			{
+				T book_id;
+			};
 
             long int book_id;
 
@@ -164,6 +194,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = support::types::single<support::types::timestamp_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T created;
+			};
+
             std::string created;
 
             created_t() : base("created"){}
@@ -188,6 +224,12 @@ namespace tagsql { namespace development
         {
             using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = support::types::single<support::types::timestamp_t>;
+
+			template<typename T>
+			struct named_member
+			{
+				T modified;
+			};
 
             std::string modified;
 
@@ -276,6 +318,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::author_t,long int,false,true>;
 			using sql_data_type = support::types::single<support::types::bigserial_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T author_id;
+			};
+
             long int author_id;
 
             author_id_t() : base("author_id"){}
@@ -297,6 +345,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::review_t,long int,false,true>;
 			using sql_data_type = support::types::single<support::types::bigserial_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T review_id;
+			};
+
             long int review_id;
 
             review_id_t() : base("review_id"){}
@@ -313,6 +367,12 @@ namespace tagsql { namespace development
             using base = metaspace::meta_column_t<schema::review_t,long int,false,false>;
 			using sql_data_type = support::types::single<support::types::bigint_t>;
 
+			template<typename T>
+			struct named_member
+			{
+				T reviewer_id;
+			};
+
             long int reviewer_id;
 
             reviewer_id_t() : base("reviewer_id"){}
@@ -328,6 +388,12 @@ namespace tagsql { namespace development
 		{
             using base = metaspace::meta_column_t<schema::review_t,long int,false, false>;
 			using sql_data_type = support::types::single<support::types::bigint_t>;
+			
+			template<typename T>
+			struct named_member
+			{
+				T book_id;
+			};
 
             long int book_id;
 
@@ -340,21 +406,46 @@ namespace tagsql { namespace development
             static char const* type_name() { return "long int"; }
 		};
 
-        struct comment_t :  metaspace::meta_column_t<schema::review_t, std::string, true, false>
+		struct mystring 
 		{
-            using base = metaspace::meta_column_t<schema::review_t, std::string,true,false>;
+			mystring() = default;
+			mystring(char const *) {}
+			mystring(std::string const &) {}
+		};
+
+        struct comment_t :  metaspace::meta_column_t<schema::review_t, mystring, true, false>
+		{
+            using base = metaspace::meta_column_t<schema::review_t,mystring,true,false>;
 			using sql_data_type = support::types::multi<support::types::character_t, 2048>;
 
-			std::string comment;
+			template<typename T>
+			struct named_member
+			{
+				T comment;
+			};
+
+			mystring comment;
 
             comment_t() : base("comment"){}
 
-            void set(std::string value) { comment = std::move(value); }
+            //void set(std::string value) { comment = std::move(value); }
 
-			std::string const & get() const { return comment; }
+			//std::string const & get() const { return comment; }
 
-            static char const* type_name() { return "std::string"; }
+            static char const* type_name() { return "mystring"; }
 		};
     }
 
 }} //tagsql # development
+
+namespace pqxx
+{
+	template<>
+	struct string_traits<tagsql::development::review_tag::mystring>
+	{
+		using mystring = tagsql::development::review_tag::mystring;
+
+		static void from_string(char const *, mystring &) {} 
+		static mystring null() { return {}; }
+	};
+}
