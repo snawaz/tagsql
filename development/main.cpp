@@ -40,7 +40,7 @@ void test_select(tagsql::development::data_context & dc)
 	namespace bt = tagsql::development::book_tag;
 	namespace rt = tagsql::development::review_tag;
 
-	auto items = dc.select(at::name, at::age)
+	auto items = dc.select(at::name, author.age)
 				   .from(author)
 				   .where(author.name.like("Sha%"));
 
@@ -48,6 +48,13 @@ void test_select(tagsql::development::data_context & dc)
 	//auto items = dc.select(at::name, at::age, bt::title).from(author).where(author.author_id == 30);
 	//auto items = dc.select(at::name, at::age).from(author).where(true); //book.author_id == 30);
 	//auto items = dc.select(at::name).from(author);//.where(book.author_id == 30);
+
+	f(*items.begin());
+	h(*items.begin());
+	g(*items.begin());
+	std::cout << std::endl;
+
+	std::cout << items << std::endl;
 	
 	//std::cout << dc.select().from(review).where(review.book_id == 2).limit(1).where(review.book_id == 2) << std::endl;   //no WHERE
 	//std::cout << dc.select().from(review).limit(1).where(review.book_id == 2) << std::endl;                              //no WHERE
@@ -61,12 +68,9 @@ void test_select(tagsql::development::data_context & dc)
 	std::cout << dc.select().from(review).where(review.book_id == 2).limit(1).offset(1) << std::endl; 
 	std::cout << dc.select(review.review_id, rt::book_id).from(review).where(review.book_id == 2).offset(1).fetch(1) << std::endl; 
 
-	f(*items.begin());
-	h(*items.begin());
-	g(*items.begin());
-	std::cout << std::endl;
+	std::cout << dc.select().from(review).group_by(review.review_id) << std::endl; 
 
-	std::cout << items << std::endl;
+	std::cout << dc.select().from(book).group_by(book.title) << std::endl; 
 }
 
 void test_insert(tagsql::development::data_context & dc)
@@ -93,7 +97,7 @@ void test_join(tagsql::development::data_context & dc)
 	auto items = dc.select() //at::name, bt::title, rt::comment)
 				   .from(author)
 				   .left_join(book).on(book.author_id == author.author_id)
-				   .inner_join(review).on(review.reviewer_id == author.author_id);
+				   .join(review).on(review.reviewer_id == author.author_id);
 
 	std::cout << items << std::endl;
 #endif

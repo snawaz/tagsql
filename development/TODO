@@ -39,9 +39,9 @@ TODO LIST
 		- join {inner, left, right, full, cross}     - DONE 
 		- on                                         - DONE
 		- where                                      - DONE
-		- group by                                   -
-		- having                                     -
-		- order by { ASC | DESC }                    - DONE
+		- group by                                   - DONE but without static checks!
+		- having                                     - DONE
+		- order by { ASC | DESC }                    - DONE (single column)
 		- limit { count | ALL }                      - DONE
 		- offset                                     - DONE
 		- fetch                                      - DONE

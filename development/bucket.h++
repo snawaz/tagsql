@@ -51,7 +51,7 @@ namespace tagsql { namespace development
 			typename Offset    = null,                           //offset
 			typename Fetch     = null
 			>
-	struct bucket
+	struct bucket //tagistan : where all tags (the column tags, table tags, condition tags etc) reside.
 	{
 
 		using select     = Select;

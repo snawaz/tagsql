@@ -159,14 +159,55 @@ namespace tagsql { namespace development
    
 	namespace ostream_detail
 	{
+		namespace overload
+		{
+			namespace detail
+			{
+				struct fallback { template<typename ... T> fallback(T && ...) {} };
+			}
+			//preferences to enforce total order of unordered overloads
+			using _1st_preference = int&&;
+			using _2nd_preference = int const&&;
+			using _3rd_preference = int const volatile&&;
+			using _4th_preference = int const &;
+			using _5th_preference = long &&;
+
+			//when all preferences fail, choose fallback as fallback.
+			using fallback = detail::fallback;
+
+			//pass resolver() as argument to overloaded function.
+			using resolver = int;
+		}
+
 		template<typename Tag>
-		auto print(std::ostream & out, column<Tag> const &c, int) -> decltype(out << c(), out)
+		auto print(std::ostream & out, column<Tag> const &c, overload::_1st_preference) -> decltype(out << c(), out)
 		{
 			return out << c();
 		}
 		
 		template<typename Tag>
-		auto print(std::ostream & out, column<Tag> const &c, ... ) -> decltype(out)
+		auto print(std::ostream & out, column<Tag> const &c, overload::_2nd_preference) -> decltype(c.print(out), out)
+		{
+			return (c.print(out), out);
+		}
+		template<typename Tag>
+		auto print(std::ostream & out, column<Tag> const &c, overload::_3rd_preference) -> decltype(print(out,c), out)
+		{
+			return (print(out,c),out);
+		}
+		template<typename Tag>
+		auto print(std::ostream & out, column<Tag> const &c, overload::_4th_preference) -> decltype(out << c.to_string(), out)
+		{
+			return out << c.to_string();
+		}
+		template<typename Tag>
+		auto print(std::ostream & out, column<Tag> const &c, overload::_5th_preference) -> decltype(out << to_string(c), out)
+		{
+			return out << to_string(c);
+		}
+		
+		template<typename Tag>
+		auto print(std::ostream & out, column<Tag> const &c, overload::fallback ) -> decltype(out)
 		{
 			return out << Tag::type_name() << "<" <<  static_cast<void const*>(&c) << ">";
 		}
@@ -177,7 +218,7 @@ namespace tagsql { namespace development
 	{
 		if ( c.is_null() ) 
 			return out << "NULL";
-		return ostream_detail::print(out, c, 0);
+		return ostream_detail::print(out, c, ostream_detail::overload::resolver());
     }
 
 }} //tagsql # development

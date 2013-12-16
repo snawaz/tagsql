@@ -7,6 +7,29 @@ namespace tagsql { namespace development
 {
     template<typename Bucket>
     class deferred_range;
+   
+	template<typename Column>
+	auto _is_valid_select_arg_impl(typename Column::_is_tag *) -> std::true_type;
+	
+	template<typename Column>
+	auto _is_valid_select_arg_impl(...) -> std::false_type;
+
+	template<typename Column>
+	using _is_valid_select_arg = decltype(_is_valid_select_arg_impl<Column>(0));
+
+	template<typename Column>
+	struct get_tag
+	{
+		static_assert(_is_valid_select_arg<Column>::value, "Invalid tag in select()");
+	
+		template<typename T>
+		static auto tag_type(typename T::tag_type *) -> typename T::tag_type;
+		
+		template<typename T>
+		static auto tag_type(...) -> T;
+
+		using type = decltype(tag_type<Column>(0));
+	};
 
 	namespace sql
 	{
@@ -39,6 +62,17 @@ namespace tagsql { namespace development
 	{
 		public:
 			using is_null_t = typename std::conditional<is_null<typename Bucket::group_by>::value, std::true_type, std::false_type>::type;
+			
+			template<typename ... Columns>
+            auto group_by(Columns ... ) -> deferred_range<typename Bucket::template add_group_by<::foam::meta::typelist<Columns...>>::type>
+            {
+				static const std::vector<std::string> names { qualify(typename get_tag<Columns>::type()) ... };
+				static const std::string clause = " GROUP BY " + ::tagsql::join(",", names) + " "; 
+
+				auto range = static_cast<deferred_range<Bucket>*>(this);
+                range->_query_without_select += clause;
+				return { range->_connection, range->_query_without_select };
+			}
 	};
 
 	template<typename Bucket>
@@ -46,6 +80,19 @@ namespace tagsql { namespace development
 	{
 		public:
 			using is_null_t = typename std::conditional<is_null<typename Bucket::having>::value, std::true_type, std::false_type>::type;
+			
+			template<typename Condition>
+            auto having(Condition const & expr) -> deferred_range<typename Bucket::template add_having<Condition>::type>
+            {
+				static_assert(is_condition_expression<Condition>::value, 
+						"Constraint Violation : expression passed to where() is invalid. It must be a condition expression involving column(s).");
+				static_assert(expression_traits<Condition>::tables::template exists<typename Bucket::from>::value, 
+						"Constraint Violation : table mismatch for the condition passed to from_expression::where().");
+
+				auto range = static_cast<deferred_range<Bucket>*>(this);
+                range->_query_without_select += " HAVING " + expr.repr();
+				return { range->_connection, range->_query_without_select };
+			}
 	};
 
 	template<typename Bucket>

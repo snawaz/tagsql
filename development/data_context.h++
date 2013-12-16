@@ -10,6 +10,7 @@
 #include <tagsql/development/formatter.h++>
 #include <tagsql/development/update_expression.h++>
 #include <tagsql/development/select_expression.h++>
+#include <tagsql/development/common_clauses.h++>
 
 
 namespace tagsql { namespace development
@@ -40,30 +41,6 @@ namespace tagsql { namespace development
                                             ::tagsql::join(",", values));
         }
     }
-   
-	template<typename Column>
-	auto _is_valid_select_arg_impl(typename Column::_is_tag *) -> std::true_type;
-	
-	template<typename Column>
-	auto _is_valid_select_arg_impl(...) -> std::false_type;
-
-	template<typename Column>
-	using _is_valid_select_arg = decltype(_is_valid_select_arg_impl<Column>(0));
-
-	template<typename Column>
-	struct get_tag
-	{
-		static_assert(_is_valid_select_arg<Column>::value, "Invalid tag in select()");
-	
-		template<typename T>
-		static auto tag_type(typename T::tag_type *) -> typename T::tag_type;
-		
-		template<typename T>
-		static auto tag_type(...) -> T;
-
-		using type = decltype(tag_type<Column>(0));
-	};
-	
 
 	template<typename ...Columns>
 	struct make_select_expression 
