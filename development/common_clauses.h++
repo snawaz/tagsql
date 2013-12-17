@@ -7,20 +7,23 @@ namespace tagsql { namespace development
 {
     template<typename Bucket>
     class deferred_range;
+
+	template<typename>
+	struct always_wrong : std::false_type {};
    
 	template<typename Column>
-	auto _is_valid_select_arg_impl(typename Column::_is_tag *) -> std::true_type;
+	auto _is_column_expression_impl(typename Column::_is_tag *) -> std::true_type;
 	
 	template<typename Column>
-	auto _is_valid_select_arg_impl(...) -> std::false_type;
+	auto _is_column_expression_impl(...) -> std::false_type;
 
 	template<typename Column>
-	using _is_valid_select_arg = decltype(_is_valid_select_arg_impl<Column>(0));
+	using _is_column_expression = decltype(_is_column_expression_impl<Column>(0));
 
 	template<typename Column>
 	struct get_tag
 	{
-		static_assert(_is_valid_select_arg<Column>::value, "Invalid tag in select()");
+		static_assert(_is_column_expression<Column>::value, "Invalid column expression.");
 	
 		template<typename T>
 		static auto tag_type(typename T::tag_type *) -> typename T::tag_type;
@@ -34,6 +37,7 @@ namespace tagsql { namespace development
 	namespace sql
 	{
 		const struct all_t{} all{};
+
 		const struct order_by_direction_t { char const *token; } asc {"ASC"}, desc {"DESC"};
 	}
 
@@ -100,21 +104,41 @@ namespace tagsql { namespace development
 	{
 		public:
 			using is_null_t = typename std::conditional<is_null<typename Bucket::order_by>::value, std::true_type, std::false_type>::type;
-			
+		
+#if 1			
 			template<typename Column>
-            auto order_by(Column const & c) -> deferred_range<typename Bucket::template add_order_by<Column>::type>
+            auto order_by(Column const & c, sql::order_by_direction_t const &d=sql::asc) -> deferred_range<typename Bucket::template add_order_by<Column>::type>
+			{
+				auto range = static_cast<deferred_range<Bucket>*>(this);
+                range->_query_without_select += " ORDER BY " + qualify(typename get_tag<Column>::type()) + " " + d.token;
+				return { range->_connection, range->_query_without_select };
+			}
+#else			
+			template<typename ... OrderByArguments>
+            auto order_by(OrderByArguments ... args) -> deferred_range<typename Bucket::template add_order_by<::foam::meta::typelist<OrderByArguments>>::type>
 			{
 				auto range = static_cast<deferred_range<Bucket>*>(this);
                 range->_query_without_select += " ORDER BY " + qualify(typename Column::tag_type());
 				return { range->_connection, range->_query_without_select };
 			}
-			template<typename Column>
-            auto order_by(Column const & c, sql::order_by_direction_t const &d) -> deferred_range<typename Bucket::template add_order_by<Column>::type>
+		private:
+			auto repr(sql::order_by_direction_t const & d, int) -> std::string 
 			{
-				auto range = static_cast<deferred_range<Bucket>*>(this);
-                range->_query_without_select += " ORDER BY " + qualify(typename Column::tag_type()) + " " + d.token;
-				return { range->_connection, range->_query_without_select };
+				return d.token;
 			}
+			template<typename T>
+			auto repr(T const &, typename std::enable_if<_is_column_expression<T>::value>::type *) -> std::string
+			{
+				return qualify(typename get_tag<T>::type());
+			}
+			template<typename T
+			auto repr(T const &, ...) -> std::string
+			{
+				static_assert(always_wrong<T>::value, "Invalid argument to order_by().");
+				return {};
+			}
+#endif
+
 	};
 
 	template<typename Bucket>

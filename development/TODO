@@ -41,7 +41,7 @@ TODO LIST
 		- where                                      - DONE
 		- group by                                   - DONE but without static checks!
 		- having                                     - DONE
-		- order by { ASC | DESC }                    - DONE (single column)
+		- order by { ASC | DESC }                    - DONE (partial)
 		- limit { count | ALL }                      - DONE
 		- offset                                     - DONE
 		- fetch                                      - DONE

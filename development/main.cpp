@@ -68,6 +68,8 @@ void test_select(tagsql::development::data_context & dc)
 	std::cout << dc.select().from(review).where(review.book_id == 2).limit(1).offset(1) << std::endl; 
 	std::cout << dc.select(review.review_id, rt::book_id).from(review).where(review.book_id == 2).offset(1).fetch(1) << std::endl; 
 
+//	std::cout << dc.select().from(review).where(review.book_id == 2).order_by(review.review_id, sql::asc, ) << std::endl; 
+
 	std::cout << dc.select().from(review).group_by(review.review_id) << std::endl; 
 
 	std::cout << dc.select().from(book).group_by(book.title) << std::endl; 
