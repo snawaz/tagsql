@@ -1,54 +1,29 @@
 
 
-
-
-
-
 #pragma once
 
+#include <tagsql/development/row_type_helper.h++>
+#include <tagsql/development/common_clauses.h++>
+#include <tagsql/development/database_error.h++>
+#include <tagsql/development/clause_picker.h++>
+#include <tagsql/string_algo.h++>
 
 #include <vector>
 #include <memory>
 
-#include <tagsql/development/row_type_helper.h++>
-#include <tagsql/development/common_clauses.h++>
-#include <tagsql/string_algo.h++>
 #include <pqxx/pqxx>
 
 
 
 namespace tagsql { namespace development
 {
-	class database_error : public std::exception
-	{
-		public:
-			database_error(std::string query, std::exception const & server_error) : _query(query), _server_error(server_error.what())
-			{}
-			virtual char const* what() const noexcept override
-			{
-				static const auto all = std::string("query:\n")
-					+ "---\n"
-					+ _query + "\n"
-					+ "---\n"
-					+ "error at server follows as:\n" + _server_error;
-				return all.c_str();
-			}
-			std::string const & query() const { return _query; }
-			std::string const & server_error() const { return _server_error; }
-		private:
-			std::string _query;
-			std::string _server_error;
-	};
-	template<typename T>
-	struct to_typelist;
-	
-	template<typename ...T>
-	struct to_typelist<std::tuple<T...>> : ::foam::meta::typelist<T...> {};
-
     template<typename Bucket>
     class deferred_range : public clause_picker<Bucket>
     {
-		public: 
+		public:
+			
+			using _is_deferred_range = std::true_type;
+
 			using bucket_type    = Bucket;
 			using value_type     = typename detail::row_type<typename bucket_type::all_tables, typename bucket_type::select>::type;
 			using iterator       = typename std::vector<value_type>::iterator;
@@ -68,11 +43,11 @@ namespace tagsql { namespace development
 			}
 			auto begin() const -> const_iterator
 			{
-				return const_cast<deferred_range&>(*this).deferred_exec().begin();
+				return const_cast<deferred_range&>(*this).begin();
 			}
 			auto end() const -> const_iterator
 			{
-				return const_cast<deferred_range&>(*this).deferred_exec().end();
+				return const_cast<deferred_range&>(*this).end();
 			}
     
 			//index-based access : const and non-const versions
@@ -85,10 +60,7 @@ namespace tagsql { namespace development
 				return const_cast<deferred_range&>(*this).deferred_exec().at(index);
 			}
     
- 			//deferred execution
-			//NOTE : if the caller makes a copy, then there will be slicing of the object
-			//and the expression will be invalid as it will loss many valuable information
-			//So the trick is to avoid slicing and instead use (const) reference.
+ 			//friendly upcast
 			auto defer() -> deferred_range&
 			{
 				return *this; 
@@ -111,26 +83,24 @@ namespace tagsql { namespace development
         	}
 			auto query_string() const -> std::string const &
 			{
-				using implied_select = typename detail::row_type<typename bucket_type::all_tables, typename bucket_type::select>::modified_tuple;
-				using columnlist = typename to_typelist<implied_select>::type;
-				constraint_check_for_selected_columns(columnlist(), typename bucket_type::all_tables());
-				return query_string(columnlist());
+				typename value_type::taglist columnlist{};
+				static_check(columnlist, typename bucket_type::all_tables());
+				return make_query_string(columnlist);
 			}
 		private:
 			std::vector<value_type>& deferred_exec()
 			{
-				using implied_select = typename detail::row_type<typename bucket_type::all_tables, typename bucket_type::select>::modified_tuple;
-				return execute(foam::meta::genseq_t<std::tuple_size<implied_select>::value>());
+				return execute(typename value_type::indices());
 			}
 			template<typename ...Columns, typename Tables>
-			void constraint_check_for_selected_columns(::foam::meta::typelist<Columns...> const &, Tables const &) const
+			void static_check(::foam::meta::typelist<Columns...> const &, Tables const &) const
 			{
 				using tables = typename ::foam::meta::typelist<typename Columns::table_type...>::template unique_cvr<>::type;
 				static_assert(tables::template is_sublist_of_cvr<Tables>::value, 
 								"Constraint Violation : at least one column does not belong to any table mentioned in the query.");
 			}
 			template<typename ...Columns>
-			std::string const & query_string(::foam::meta::typelist<Columns...>) const 
+			std::string const & make_query_string(::foam::meta::typelist<Columns...>) const 
 			{
 				static const std::vector<std::string> names { qualify(Columns()) ... };
 				static const std::string select_clause = "SELECT " + ::tagsql::join(",", names) + " "; 

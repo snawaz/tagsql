@@ -1,10 +1,15 @@
 
+#pragma once
+
 #include <string>
 #include <tagsql/development/column.h++>
 #include <foam/meta/typelist.h++>
 
 namespace tagsql { namespace development
 {
+	//template<typename Tag>
+	//struct column;
+
 	template<typename Tag>
 	struct column_expression
 	{

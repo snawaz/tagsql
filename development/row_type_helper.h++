@@ -34,14 +34,12 @@ namespace tagsql { namespace development { namespace detail
     {
 		using stdtuple = bare_type_t<decltype(std::tuple_cat(typename metaspace::meta_table<Tables>::columns_tuple() ... ))>;
 		using type = typename to_named_tuple<stdtuple>::type;
-        using modified_tuple = bare_type_t<decltype(std::tuple_cat(typename metaspace::meta_table<Tables>::columns_tuple() ... ))>;
     };
     
 	template<typename Table>
     struct all_columns_of_all_tables<::foam::meta::typelist<Table>> 
     {
         using type = Table; 
-        using modified_tuple = typename metaspace::meta_table<Table>::columns_tuple;
     };
     
     //table or selected columns
@@ -55,14 +53,12 @@ namespace tagsql { namespace development { namespace detail
         using type = typename std::conditional<std::is_same<possible_type, Table>::value, 
                                                   Table, 
                                                   typename table_or_selected_columns<::foam::meta::typelist<Rest...>, SelectedColumnsTuple>::type>::type;
-        using modified_tuple = SelectedColumnsTuple;
     };
     
     template<typename Table, typename SelectedColumnsTuple>
     struct table_or_selected_columns<::foam::meta::typelist<Table>, SelectedColumnsTuple>
     {
         using type = typename metaspace::meta_table<Table>::template row_type<SelectedColumnsTuple>::type;
-        using modified_tuple = SelectedColumnsTuple; 
     };
     
     //row_type

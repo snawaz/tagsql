@@ -411,6 +411,8 @@ namespace tagsql { namespace development
 			mystring() = default;
 			mystring(char const *) {}
 			mystring(std::string const &) {}
+
+			//friend std::ostream& operator<<(std::ostream & out, mystring const& item) { return out << "mystr::addr<" << &item << ">"; }
 		};
 
         struct comment_t :  metaspace::meta_column_t<schema::review_t, mystring, true, false>

@@ -30,6 +30,15 @@ Features
 	- Query reuse.
 
 
+Example Sample Query
+====================
+
+select U.business_site_name, U.category_hierarchy_string, C.category_name 
+from( (select business_site_name, category_hierarchy_id from business_site as A, category_map as B where A.business_site_id = B.business_site_id) as S 
+	   inner join category_hierarchy as T on S.category_hierarchy_id = T.category_hierarchy_id) as U
+inner join category as C on C.category_id = U.level1_category_id
+
+
 TODO LIST
 =========
 
@@ -41,10 +50,17 @@ TODO LIST
 		- where                                      - DONE
 		- group by                                   - DONE but without static checks!
 		- having                                     - DONE
-		- order by { ASC | DESC }                    - DONE (partial)
+		- order by { ASC | DESC }                    - DONE but without 'using operator'
 		- limit { count | ALL }                      - DONE
 		- offset                                     - DONE
 		- fetch                                      - DONE
+	
+	- sub-query
+		- from(sub-query)            - 
+	
+	- aggregate functions
+		- sum                        -
+		- avg                        -
 
 	- features
 		- implicit truncate conversion of named_tuple when target named_tuple has subset of source tags.   - DONE

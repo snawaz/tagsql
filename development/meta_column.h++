@@ -11,11 +11,6 @@
 #include <string>
 #include <array>
 
-#include <tagsql/development/condition.h++>
-
-//#include <tagsql/string_algo.h++>
-
-
 namespace tagsql { namespace development { namespace metaspace
 {
     

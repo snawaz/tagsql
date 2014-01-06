@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <tagsql/development/expression.h++>
 
 namespace tagsql { namespace development
 {
@@ -40,6 +41,10 @@ namespace tagsql { namespace development
 
 		const struct order_by_direction_t { char const *token; } asc {"ASC"}, desc {"DESC"};
 	}
+	
+	template<typename T>
+	using _is_order_by_direction = std::is_same<sql::order_by_direction_t, T>;
+
 
 	template<typename Bucket>
 	class where_clause 
@@ -98,6 +103,18 @@ namespace tagsql { namespace development
 				return { range->_connection, range->_query_without_select };
 			}
 	};
+	
+	template<typename T>
+	struct _is_order_by_argument : std::integral_constant<bool,_is_column_expression<T>::value || _is_order_by_direction<T>::value > {};
+	
+	template<>
+	struct _is_order_by_argument<order_by_argument_t> : std::true_type {};
+
+	template<template<typename> class Predicate, typename T, typename ...Rest>
+	struct is_all : std::integral_constant<bool, Predicate<T>::value and is_all<Predicate, Rest...>::value> {};
+	
+	template<template<typename> class Predicate, typename T>
+	struct is_all<Predicate,T> : std::integral_constant<bool, Predicate<T>::value> {};
 
 	template<typename Bucket>
 	class order_by_clause
@@ -105,40 +122,100 @@ namespace tagsql { namespace development
 		public:
 			using is_null_t = typename std::conditional<is_null<typename Bucket::order_by>::value, std::true_type, std::false_type>::type;
 		
-#if 1			
-			template<typename Column>
-            auto order_by(Column const & c, sql::order_by_direction_t const &d=sql::asc) -> deferred_range<typename Bucket::template add_order_by<Column>::type>
-			{
-				auto range = static_cast<deferred_range<Bucket>*>(this);
-                range->_query_without_select += " ORDER BY " + qualify(typename get_tag<Column>::type()) + " " + d.token;
-				return { range->_connection, range->_query_without_select };
-			}
-#else			
 			template<typename ... OrderByArguments>
-            auto order_by(OrderByArguments ... args) -> deferred_range<typename Bucket::template add_order_by<::foam::meta::typelist<OrderByArguments>>::type>
+            auto order_by(OrderByArguments const &... args) -> deferred_range<typename Bucket::template add_order_by<::foam::meta::typelist<OrderByArguments...>>::type>
 			{
+				static_assert(sizeof...(args) != 0 && is_all<_is_order_by_argument, OrderByArguments...>::value, 
+						"Invalid arguments to order_by()");
+
+				//true, true, true, false, false, true, true, false, 
 				auto range = static_cast<deferred_range<Bucket>*>(this);
-                range->_query_without_select += " ORDER BY " + qualify(typename Column::tag_type());
+                range->_query_without_select += order_by_impl(args...);
 				return { range->_connection, range->_query_without_select };
 			}
 		private:
-			auto repr(sql::order_by_direction_t const & d, int) -> std::string 
+#if 1			
+			template<typename Column, typename ...Rest>
+			auto order_by_impl(Column const&, Rest const & ...rest) -> std::string
 			{
-				return d.token;
+				return " ORDER BY " + qualify(typename get_tag<Column>::type()) + iterate(std::false_type(), rest...);
+			}
+			template<typename ...Rest>
+			auto order_by_impl(order_by_argument_t const & t, Rest const & ...rest) -> decltype(t.value)
+			{
+				return " ORDER BY " + t.value + iterate(std::false_type(), rest...);
+			}
+			template<typename Boolean>
+			auto iterate(Boolean) -> std::string
+			{
+				return "";
+			}
+			template<typename Boolean, typename T, typename ...Rest>
+			auto iterate(Boolean, T const & t, Rest const &...rest) -> std::string
+			{
+				using dispatch_token = std::integral_constant<bool,_is_order_by_direction<T>::value>;
+				return (dispatch_token::value ? " " : ",") + static_dispatch(Boolean(), dispatch_token(), t, rest...);
+			}
+			template<typename AnyBoolean, typename T, typename ...Rest>
+			auto static_dispatch(AnyBoolean, std::false_type, T const& t, Rest const &...rest) -> std::string
+			{	
+				return value(t,0) + iterate(std::false_type(), rest...);
+			}
+			template<typename T, typename ...Rest>
+			auto static_dispatch(std::false_type, std::true_type, T const & t, Rest const &...rest) -> std::string
+			{	
+				return t.token + iterate(std::true_type(), rest...);
+			}
+			template<typename T, typename ...Rest>
+			auto static_dispatch(std::true_type, std::true_type, T const&, Rest const & ...)
+			{
+				static_assert(always_wrong<T>::value, "Invalid arguments to order_by() : more than one consecutive order_by_direction is not allowed");
 			}
 			template<typename T>
-			auto repr(T const &, typename std::enable_if<_is_column_expression<T>::value>::type *) -> std::string
-			{
+			auto value(T const &t, int) -> decltype(t.value) 
+			{	
+				return t.value;
+			}
+			template<typename T>
+			auto value(T const &, ...)-> std::string
+			{	
 				return qualify(typename get_tag<T>::type());
 			}
-			template<typename T
-			auto repr(T const &, ...) -> std::string
+#else
+			template<typename Column, typename ...Rest>
+			auto order_by_impl(Column const&, Rest const & ...rest) -> std::string
 			{
-				static_assert(always_wrong<T>::value, "Invalid argument to order_by().");
-				return {};
+				return " ORDER BY " + qualify(typename get_tag<Column>::type()) + iterate(std::true_type(), rest...);
+			}
+			
+			template<typename Boolean>
+			auto iterate(Boolean) -> std::string
+			{
+				return "";
+			}
+			template<typename Boolean, typename T, typename ...Rest>
+			auto iterate(Boolean, T const & t, Rest const &...rest) -> std::string
+			{
+				using dispatch_token = std::integral_constant<bool,_is_column_expression<T>::value>;
+				return (dispatch_token::value ? ", " : " ") + static_dispatch(Boolean(), dispatch_token(), t, rest...);
+			}
+
+			template<typename AnyBoolean, typename T, typename ...Rest>
+			auto static_dispatch(AnyBoolean, std::true_type, T const&, Rest const &...rest) -> std::string
+			{	
+				return qualify(typename get_tag<T>::type()) + iterate(std::true_type(), rest...);
+			}
+			template<typename T, typename ...Rest>
+			auto static_dispatch(std::true_type, std::false_type, T const & t, Rest const &...rest) -> std::string
+			{	
+				return t.token + iterate(std::false_type(), rest...);
+			}
+			template<typename T, typename ...Rest>
+			auto static_dispatch(std::false_type, std::false_type, T const&, Rest const & ...)
+			{
+				static_assert(always_wrong<T>::value, "Invalid arguments to order_by() : more than one consecutive order_by_direction is not allowed");
 			}
 #endif
-
 	};
 
 	template<typename Bucket>
@@ -206,20 +283,4 @@ namespace tagsql { namespace development
 			}
 	};
 
-	template<typename Clause> struct empty {}; //make it template so as to avoid having duplicate base classes. All the bases must be unique!
-
-	template<typename Clause>
-	using may_pick = typename std::conditional<Clause::is_null_t::value, Clause, empty<Clause>>::type;
-
-	template<typename Bucket>
-	class clause_picker : public may_pick<where_clause<Bucket>>,
-						  public may_pick<group_by_clause<Bucket>>,
-						  public may_pick<having_clause<Bucket>>,
-						  public may_pick<order_by_clause<Bucket>>,
-						  public may_pick<limit_clause<Bucket>>,
-						  public may_pick<offset_clause<Bucket>>,
-						  public may_pick<fetch_clause<Bucket>>
-	{
-
-	};
 }} 

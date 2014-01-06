@@ -6,9 +6,7 @@
 
 #include <string>
 
-//#include <tagsql/development/tags.h++>
-//#include <tagsql/development/meta_table.h++>
-
+//#include <tagsql/development/common_clauses.h++>
 #include <foam/strlib/format.h>
 #include <foam/meta/typelist.h++>
 #include <foam/optional.h>
@@ -26,6 +24,20 @@ namespace tagsql { namespace development
 	template<typename ...Tags>
 	struct named_tuple;
 
+    namespace bare
+    {
+		template<typename T>
+		using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type; //or use std::decay, as it removes both cv and const!
+
+		template<typename T, typename U>
+		struct is_same : std::is_same<type<T>, type<U>> {};
+    }
+	
+	struct order_by_argument_t
+	{
+		std::string value;
+	};
+
     template<typename Tag>
     class column : public Tag::sql_data_type::template operators<Tag>
     {
@@ -36,18 +48,18 @@ namespace tagsql { namespace development
 		
 			using _is_column = std::true_type;
 			using _is_tag = std::false_type;
-    
-            static const bool is_nullable    = tag_type::is_nullable; 
-            static const bool server_default = tag_type::server_default; 
+  
+            static constexpr bool is_nullable    = tag_type::is_nullable; 
+            static constexpr bool server_default = tag_type::server_default; 
     
             column() {}
     
             column(value_type value) : _data(std::move(value)) {}
     
-            template<typename U, typename Unused=typename std::enable_if<!::foam::meta::bare::is_same<U,pqxx::field>::value>::type >
+            template<typename U, typename Unused=typename std::enable_if<!bare::is_same<U,pqxx::field>::value>::type >
             column(U && value) 
             {
-                static_assert(std::is_constructible<value_type, U>::value, "column::value_type cannot be constructed from the argument");
+                static_assert(std::is_constructible<value_type, bare::type<U>>::value, "column::value_type cannot be constructed from the argument");
                 set(std::forward<U>(value));
             }
     
@@ -107,20 +119,40 @@ namespace tagsql { namespace development
             {
                 return _null_has_been_set;
             }
+
+			static auto column_name(bool qualified) -> std::string
+			{
+				return qualified ? qualify(tag_type()) : tag_type().column_name;
+			}
     
-            static std::string column_name(bool qualify) 
-            {
-                return "TODO" ;//(qualify ? metaspace::meta_table<table_type>::name() + "."  : "") + tag_type().column_name;
-            }
-    
+			auto operator-() const -> order_by_argument_t
+			{
+				return {qualify(tag_type()) + " DESC"};
+			}
+			auto operator+() const -> order_by_argument_t
+			{
+				return {qualify(tag_type()) + " ASC"};
+			}
         private:
 			template<typename ...Tags>
 			friend class named_tuple;
-
+#if 0
+            template<typename U>
+            auto print (U && value, int) -> decltype(std::cout << value)
+			{
+				return std::cout << Tag().column_name << "=> is set to => " << value << std::endl;
+			}
+            template<typename U>
+            auto print (U && value, ...) -> std::ostream&
+			{
+				return std::cout << Tag().column_name << "=> is set to => " << (void*)&value << std::endl;
+			}
+#endif			
             template<typename U>
             column& set(U && value)
             {
 			 	using type = typename std::remove_cv<typename std::remove_reference<U>::type>::type;
+				//print(value, 0);
 				set_internal(std::forward<U>(value), static_cast<type*>(0));
 				return *this;
 			}

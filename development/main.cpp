@@ -11,10 +11,15 @@ const tagsql::development::schema::review_t review{};
 
 using namespace tagsql::development;
 
+template<typename NamedTuple>
+void fff(NamedTuple item)
+{
+	std::cout << item << std::endl;
+}
 void f(named_tuple<author_tag::name_t, author_tag::age_t> item)
 {
 	std::cout << "f() => " << item.name << "," << item.age << std::endl;
-	std::cout << "f() => " << item.at<0>() <<"," << item[author_tag::age] << std::endl;
+	std::cout << "f() => " << item.at<0>() <<"," << item[author.age] << std::endl;
 }
 
 void h(named_tuple<author_tag::age_t, author_tag::name_t> item)
@@ -40,6 +45,16 @@ void test_select(tagsql::development::data_context & dc)
 	namespace bt = tagsql::development::book_tag;
 	namespace rt = tagsql::development::review_tag;
 
+	for(auto const & item : dc.select().from(author))
+	{
+		f(item);
+		h(item);
+		g(item);
+		break;
+	}
+
+	std::cout << "-----------------------------\n";
+	
 	auto items = dc.select(at::name, author.age)
 				   .from(author)
 				   .where(author.name.like("Sha%"));
@@ -68,11 +83,15 @@ void test_select(tagsql::development::data_context & dc)
 	std::cout << dc.select().from(review).where(review.book_id == 2).limit(1).offset(1) << std::endl; 
 	std::cout << dc.select(review.review_id, rt::book_id).from(review).where(review.book_id == 2).offset(1).fetch(1) << std::endl; 
 
-//	std::cout << dc.select().from(review).where(review.book_id == 2).order_by(review.review_id, sql::asc, ) << std::endl; 
-
 	std::cout << dc.select().from(review).group_by(review.review_id) << std::endl; 
 
-	std::cout << dc.select().from(book).group_by(book.title) << std::endl; 
+	//std::cout << dc.select().from(book).group_by(book.title) << std::endl; 
+
+	std::cout << dc.select().from(review).where(review.reviewer_id == 2).order_by(review.review_id, sql::asc, review.book_id, sql::desc) << std::endl; 
+	std::cout << dc.select().from(review).where(review.reviewer_id == 2).order_by(review.review_id, sql::asc, review.book_id, sql::asc) << std::endl; 
+	std::cout << dc.select().from(review).where(review.reviewer_id == 2).order_by(review.review_id, sql::desc, review.book_id, sql::asc) << std::endl; 
+	std::cout << dc.select().from(review).where(review.reviewer_id == 2).order_by(-review.review_id, +review.book_id) << std::endl; 
+
 }
 
 void test_insert(tagsql::development::data_context & dc)
@@ -113,7 +132,7 @@ int main()
 		tagsql::development::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
 		test_select(dc);
 //		test_insert(dc);
-		test_join(dc);
+//		test_join(dc);
     }
     catch(std::exception const & e)
     {

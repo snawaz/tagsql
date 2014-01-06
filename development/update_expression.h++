@@ -24,7 +24,6 @@
 
 namespace tagsql { namespace development
 {
-    
     template<typename Table>
     class update_expression
     {
@@ -33,11 +32,11 @@ namespace tagsql { namespace development
         update_expression(std::shared_ptr<pqxx::connection> const & connection, std::string query)
             : _connection(connection), _query(std::move(query)), _executed(false) {}
     
-        auto where(condition clause) -> std::string
-        {
-            _query += " WHERE " + clause._value;
-            return execute();
-        }
+        //auto where(condition clause) -> std::string
+        //{
+        //    _query += " WHERE " + clause._value;
+        //    return execute();
+        //}
         auto all() -> std::string
         {
             return execute();
@@ -58,6 +57,5 @@ namespace tagsql { namespace development
         std::string                       _query;
         bool                              _executed;
     };
-    
 
 }} //tagsql # development

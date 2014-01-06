@@ -33,8 +33,8 @@ namespace tagsql { namespace development
             };
 
         public:
-            
-			using taglist = ::foam::meta::typelist<Tags...>;
+	    	using taglist  = ::foam::meta::typelist<Tags...>;
+	    	using indices  = ::foam::meta::genseq_t<taglist::size>;
    
 			constexpr named_tuple() = default;
 
@@ -66,7 +66,7 @@ namespace tagsql { namespace development
    
             //tag-based access (non-const)
             template<typename Tag>
-            auto operator[](Tag const &tag) -> column<Tag> &
+            auto operator[](Tag const &) -> column<Tag> &
             {
 				return get<Tag>();
             }
@@ -74,6 +74,20 @@ namespace tagsql { namespace development
             //tag-based access (const)
             template<typename Tag>
             auto operator[](Tag const &) const -> column<Tag> const&
+            {
+				return get<Tag>();
+            }
+
+            //tag-based access (non-const)
+            template<typename Tag>
+            auto operator[](column<Tag> const &) -> column<Tag> &
+            {
+				return get<Tag>();
+            }
+    
+            //tag-based access (const)
+            template<typename Tag>
+            auto operator[](column<Tag> const &) const -> column<Tag> const&
             {
 				return get<Tag>();
             }
@@ -96,7 +110,7 @@ namespace tagsql { namespace development
                 return member<Index>(is_valid());
             }
 		
-			//tag-type based
+			//tag-type based (non-const)
 			template<typename Tag>
 			auto get() -> column<Tag> &
 			{
@@ -104,6 +118,8 @@ namespace tagsql { namespace development
                 static_assert( index >= 0, "Invalid Tag passed to named_tuple::get<>().");
 				return member<Tag>();
 			}
+			
+			//tag-type based (const)
 			template<typename Tag>
 			auto get() const -> column<Tag> const &
 			{
@@ -124,7 +140,8 @@ namespace tagsql { namespace development
 			auto member() const -> column<Tag> const & 
 			{
 				using base_type = typename Tag::template named_member<column<Tag>>;
-                return reinterpret_cast<column<Tag> const&>(static_cast<base_type const&>(*this));
+                auto const & item = reinterpret_cast<column<Tag> const&>(static_cast<base_type const&>(*this));
+				return item;
 			}
 			template<std::size_t Index>
 			auto member(std::true_type) -> column<typename taglist::template at<Index>::type> &

@@ -1,51 +1,31 @@
 
 
-
-
-
-
 #pragma once
 
-
-#include <type_traits>
-#include <string>
-#include <memory>
-#include <array>
-
-#include <foam/meta/seq.h++>
-#include <foam/meta/typelist.h++>
-
-#include <tagsql/development/table.h++>
-#include <tagsql/development/meta_table.h++>
-#include <tagsql/development/meta_column.h++>
-#include <tagsql/development/tags.h++>
-#include <tagsql/development/cross_expression.h++>
 #include <tagsql/development/join_expression.h++>
-#include <tagsql/development/where_expression.h++>
 #include <tagsql/development/deferred_range.h++>
+#include <tagsql/development/meta_table.h++>
 
+#include <string>
 #include <pqxx/pqxx>
-
 
 namespace tagsql { namespace development
 {
     template<typename Bucket>
-    class from_expression : public deferred_range<Bucket>
+    class composite_table : public deferred_range<Bucket>
     {
             using base = deferred_range<Bucket>;
-			using select_tags = typename Bucket::select;
-			using columns_tuple = typename metaspace::meta_table<typename Bucket::from>::columns_tuple;
         public: 
-            using value_type = typename base::value_type; 
-            using implied_select = typename std::conditional<metaspace::meta_table<value_type>::is_table, columns_tuple, select_tags>::type;
     
-            from_expression(std::shared_ptr<pqxx::connection> & connection)
-            : base(connection, "FROM " + metaspace::meta_table<typename Bucket::from>::name() ) { }
+			composite_table(std::shared_ptr<pqxx::connection> & connection, std::string query)
+            : base(connection, query) 
+            { 
+            }
 
             template<typename OtherTable>
-            auto cross_join(OtherTable) -> cross_expression<typename Bucket::template add_join<OtherTable, join_type::cross>::type>
+            auto cross_join(OtherTable) -> composite_table<typename Bucket::template add_join<OtherTable, join_type::cross>::type>
             {
-                return {this->_connection, this->_query_without_select};
+                return {this->_connection, this->_query_without_select + " CROSS JOIN " + metaspace::meta_table<OtherTable>::name() };
             }
 
             template<typename OtherTable>

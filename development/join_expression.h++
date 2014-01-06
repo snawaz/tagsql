@@ -1,28 +1,17 @@
 
 
-
-
-
-
 #pragma once
 
-
-#include <type_traits>
-#include <string>
-#include <memory>
-#include <array>
-
-#include <tagsql/development/table.h++>
 #include <tagsql/development/meta_table.h++>
-#include <tagsql/development/meta_column.h++>
-#include <tagsql/development/tags.h++>
-#include <tagsql/development/deferred_range.h++>
-#include <tagsql/development/on_expression.h++>
-#include <pqxx/pqxx>
 
+#include <string>
+#include <pqxx/pqxx>
 
 namespace tagsql { namespace development
 {
+    template<typename Bucket>
+    class composite_table;
+
 	template<typename Bucket>
 	class join_expression 
 	{
@@ -37,7 +26,7 @@ namespace tagsql { namespace development
         	}
 			
 			template<typename Condition>
-            auto on(Condition const & expr) -> on_expression<typename Bucket::template add_on<Condition>::type>
+            auto on(Condition const & expr) -> composite_table<typename Bucket::template add_on<Condition>::type>
             {
 				static_assert(is_condition_expression<Condition>::value, 
 						"Invalid Query : expression passed to on() is invalid. It must be a condition expression involving column(s).");
