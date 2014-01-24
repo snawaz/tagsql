@@ -45,10 +45,10 @@ namespace tagsql { namespace development { namespace metaspace
         };
     
         template<typename Table, typename ColumnsTuple>
-        struct row_type;
+        struct row_type_helper;
     
         template<typename Table>
-        struct row_type<Table, std::tuple<>>
+        struct row_type_helper<Table, std::tuple<>>
         {
             using type = Table;
         };
@@ -61,13 +61,17 @@ namespace tagsql { namespace development { namespace metaspace
         };
 		*/    
         template<typename Table, typename ... Columns>
-        struct row_type<Table, std::tuple<Columns...>>
+        struct row_type_helper<Table, std::tuple<Columns...>>
         {
             using list1 = foam::meta::typelist<Columns...>;
             using list2 = typename foam::meta::to_typelist<typename tuple_type<Table, std::tuple<>>::type>::type;
             using type  = typename std::conditional<list1::template is_sublist_of_cvr<list2>::value && list2::template is_sublist_of_cvr<list1>::value,
                                                       Table, named_tuple<Columns...>>::type;
         };
+        
+		template<typename Table, typename Columns>
+        struct row_type : row_type_helper<Table, Columns> {};
+		
     }
     
     template<typename Table> 

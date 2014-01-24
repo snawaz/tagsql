@@ -13,7 +13,7 @@ namespace tagsql { namespace development
 	struct always_wrong : std::false_type {};
    
 	template<typename Column>
-	auto _is_column_expression_impl(typename Column::_is_tag *) -> std::true_type;
+	auto _is_column_expression_impl(typename Column::_is_column *) -> std::true_type;
 	
 	template<typename Column>
 	auto _is_column_expression_impl(...) -> std::false_type;

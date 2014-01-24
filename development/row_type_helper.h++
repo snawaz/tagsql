@@ -68,8 +68,45 @@ namespace tagsql { namespace development { namespace detail
     template<typename TableList>
     struct row_type<TableList, std::tuple<>> : all_columns_of_all_tables<TableList> {};
     
+#if 0	
     template<typename TableList, typename First, typename ...Rest>
     struct row_type<TableList, std::tuple<First, Rest...>> : table_or_selected_columns<TableList, std::tuple<First, Rest...>> {};
-    
+#else
+
+	template<typename TableList, typename Column>
+	struct resolve_column
+	{
+		template<typename T>
+		struct resolver
+		{
+			using tables = typename T::tables::template intersection<TableList>::type;
+			
+			static_assert(tables::size != 0, "universal tag doesn't resolve to any of the tables.");
+			static_assert(tables::size == 1, "ambiguous column : universal tag resolves to more than one tables.");
+
+			using table = typename tables::template at<0>::type;
+			using type = typename T::template get_column<table>::type;
+		};
+
+		template<typename T>
+		struct identity { using type = T; };
+
+		template<typename T>
+		static auto resolve(typename T::_is_unique *) -> resolver<T>;
+
+		template<typename T>
+		static auto resolve(...) -> identity<T>;
+
+		using type = typename decltype(resolve<Column>(0))::type; 
+	};
+
+    template<typename TableList, typename First, typename ...Rest>
+    struct row_type<TableList, std::tuple<First, Rest...>>
+	{
+		using type = typename table_or_selected_columns<TableList, 
+			  std::tuple<typename resolve_column<TableList, First>::type, typename resolve_column<TableList, Rest>::type...>>::type;
+	};
+
+#endif
 
 }}} //tagsql # development # detail

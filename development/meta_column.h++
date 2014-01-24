@@ -32,8 +32,7 @@ namespace tagsql { namespace development { namespace metaspace
         using table_type  = Table;
         using column_type = ColumnType;
 		
-		using _is_tag = std::true_type;
-		using _is_column = std::false_type;
+		using _is_column = std::true_type;
     
         static const bool is_nullable = Nullable;
         static const bool server_default = ServerDefault;

@@ -4,6 +4,7 @@
 #include "data_context.h++"
 #include "table.h++"
 #include "tags.h++"
+#include "universal_tags.h++"
 
 const tagsql::development::schema::author_t author{};
 const tagsql::development::schema::book_t book{};
@@ -36,7 +37,17 @@ void g(named_tuple<author_tag::name_t> item)
 	std::cout << "g() => " << item << std::endl;
 }
 
+void test_universal_tags(tagsql::development::data_context & dc)
+{
+	namespace t=tagsql::development::universal_tags;
 
+	std::cout << dc.select(t::created).from(book) << std::endl;
+	std::cout << dc.select(t::created).from(author) << std::endl;
+
+	std::cout << dc.select(book.title).from(book) << std::endl;
+
+}
+#if 0
 void test_select(tagsql::development::data_context & dc)
 {
 	using namespace tagsql::development;
@@ -124,13 +135,15 @@ void test_join(tagsql::development::data_context & dc)
 #endif
 
 }
+#endif 
 
 int main()
 {
     try
     {
 		tagsql::development::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
-		test_select(dc);
+		test_universal_tags(dc);
+//		test_select(dc);
 //		test_insert(dc);
 //		test_join(dc);
     }

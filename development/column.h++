@@ -47,7 +47,6 @@ namespace tagsql { namespace development
             using value_type = typename Tag::column_type;
 		
 			using _is_column = std::true_type;
-			using _is_tag = std::false_type;
   
             static constexpr bool is_nullable    = tag_type::is_nullable; 
             static constexpr bool server_default = tag_type::server_default; 

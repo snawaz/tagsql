@@ -40,13 +40,13 @@ namespace tagsql { namespace development
 				T created;
 			};
 
-            std::string created;
+//            std::string created;
 
             created_t() : base("created"){}
 
-            void set(std::string value) { created = std::move(value); }
+//           void set(std::string value) { created = std::move(value); }
 
-            std::string const & get() const { return created; }
+//           std::string const & get() const { return created; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -71,13 +71,13 @@ namespace tagsql { namespace development
 				T modified;
 			};
 
-            std::string modified;
+            //std::string modified;
 
             modified_t() : base("modified"){}
 
-            void set(std::string value) { modified = std::move(value); }
+            //void set(std::string value) { modified = std::move(value); }
 
-            std::string const & get() const { return modified; }
+            //std::string const & get() const { return modified; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -102,13 +102,13 @@ namespace tagsql { namespace development
 				T author_id;
 			};
 
-            long int author_id;
+            //long int author_id;
 
             author_id_t() : base("author_id"){}
 
-            void set(long int value) { author_id = std::move(value); }
+            //void set(long int value) { author_id = std::move(value); }
 
-            long int const & get() const { return author_id; }
+            //long int const & get() const { return author_id; }
 
             static char const* type_name() { return "long int"; }
         };
@@ -133,13 +133,13 @@ namespace tagsql { namespace development
 				T title;
 			};
 
-            std::string title;
+            //std::string title;
 
             title_t() : base("title"){}
 
-            void set(std::string value) { title = std::move(value); }
+            //void set(std::string value) { title = std::move(value); }
 
-            std::string const & get() const { return title; }
+            //std::string const & get() const { return title; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -164,13 +164,13 @@ namespace tagsql { namespace development
 				T book_id;
 			};
 
-            long int book_id;
+            //long int book_id;
 
             book_id_t() : base("book_id"){}
 
-            void set(long int value) { book_id = std::move(value); }
+            //void set(long int value) { book_id = std::move(value); }
 
-            long int const & get() const { return book_id; }
+            //long int const & get() const { return book_id; }
 
             static char const* type_name() { return "long int"; }
         };
@@ -200,13 +200,13 @@ namespace tagsql { namespace development
 				T created;
 			};
 
-            std::string created;
+            //std::string created;
 
             created_t() : base("created"){}
 
-            void set(std::string value) { created = std::move(value); }
+            //void set(std::string value) { created = std::move(value); }
 
-            std::string const & get() const { return created; }
+            //std::string const & get() const { return created; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -231,13 +231,13 @@ namespace tagsql { namespace development
 				T modified;
 			};
 
-            std::string modified;
+            //std::string modified;
 
             modified_t() : base("modified"){}
 
-            void set(std::string value) { modified = std::move(value); }
+            //void set(std::string value) { modified = std::move(value); }
 
-            std::string const & get() const { return modified; }
+            //std::string const & get() const { return modified; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -262,13 +262,13 @@ namespace tagsql { namespace development
 				T age;
 			};
 
-            short age;
+            //short age;
 
             age_t() : base("age"){}
 
-            void set(short value) { age = std::move(value); }
+            //void set(short value) { age = std::move(value); }
 
-            short const & get() const { return age; }
+            //short const & get() const { return age; }
 
             static char const* type_name() { return "short"; }
         };
@@ -293,13 +293,13 @@ namespace tagsql { namespace development
 				T name;
 			};
 
-            std::string name;
+            //std::string name;
 
             name_t() : base("name"){}
 
-            void set(std::string value) { name = std::move(value); }
+            //void set(std::string value) { name = std::move(value); }
 
-            std::string const & get() const { return name; }
+            //std::string const & get() const { return name; }
 
             static char const* type_name() { return "std::string"; }
         };
@@ -324,13 +324,13 @@ namespace tagsql { namespace development
 				T author_id;
 			};
 
-            long int author_id;
+            //long int author_id;
 
             author_id_t() : base("author_id"){}
 
-            void set(long int value) { author_id = std::move(value); }
+            //void set(long int value) { author_id = std::move(value); }
 
-            long int const & get() const { return author_id; }
+            //long int const & get() const { return author_id; }
 
             static char const* type_name() { return "long int"; }
         };
@@ -351,13 +351,13 @@ namespace tagsql { namespace development
 				T review_id;
 			};
 
-            long int review_id;
+            //long int review_id;
 
             review_id_t() : base("review_id"){}
 
-            void set(long int value) { review_id = std::move(value); }
+            //void set(long int value) { review_id = std::move(value); }
 
-            long int const & get() const { return review_id; }
+            //long int const & get() const { return review_id; }
 
             static char const* type_name() { return "long int"; }
 		};
@@ -373,13 +373,13 @@ namespace tagsql { namespace development
 				T reviewer_id;
 			};
 
-            long int reviewer_id;
+            //long int reviewer_id;
 
             reviewer_id_t() : base("reviewer_id"){}
 
-            void set(long int value) { reviewer_id = std::move(value); }
+            //void set(long int value) { reviewer_id = std::move(value); }
 
-            long int const & get() const { return reviewer_id; }
+            //long int const & get() const { return reviewer_id; }
 
             static char const* type_name() { return "long int"; }
 		};
@@ -395,13 +395,13 @@ namespace tagsql { namespace development
 				T book_id;
 			};
 
-            long int book_id;
+            //long int book_id;
 
             book_id_t() : base("book_id"){}
 
-            void set(long int value) { book_id = std::move(value); }
+            //void set(long int value) { book_id = std::move(value); }
 
-            long int const & get() const { return book_id; }
+            //long int const & get() const { return book_id; }
 
             static char const* type_name() { return "long int"; }
 		};
@@ -426,7 +426,7 @@ namespace tagsql { namespace development
 				T comment;
 			};
 
-			mystring comment;
+			//mystring comment;
 
             comment_t() : base("comment"){}
 
