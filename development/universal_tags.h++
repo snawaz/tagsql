@@ -26,20 +26,6 @@ namespace tagsql { namespace development { namespace universal_tags
 
 		using tables       = ::foam::meta::typelist<schema::book_t, schema::author_t>;
 
-		/*
-		template<typename T>
-		struct named_member
-		{
-			T created;
-		};
-
-		struct sql_data_type
-		{
-			template<typename Tag>
-			struct operators {}; //dummy
-		};
-		*/
-
 		template<typename Table>
 		struct get_column : detail::get_created<Table>{};
 	

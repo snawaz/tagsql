@@ -42,19 +42,25 @@ namespace tagsql
 				}; 
 
 				std::map<std::string, std::tuple<code_writer, std::vector<std::string>>> writers;
+			
+				//few friendly lambdas!
 				auto add_writer = [&](std::string name, std::string filename, std::vector<std::string> ns)
 				{
 					writers.insert(std::make_pair(std::move(name), std::make_tuple(code_writer(std::move(filename)),std::move(ns))));
 				};
+				auto stream = [&](std::string key) -> code_writer& { return std::get<0>(writers.at(key)); };
+
+				//add various code writers for various codefile to be generated
 				add_writer("table", outdir + "table.h++", add_project_ns_tokens("schema"));
 				add_writer("tags", outdir + "tags.h++", project_ns_tokens());
 				add_writer("tags_impl", outdir + "tags_impl.h++", project_ns_tokens());
 				add_writer("keys", outdir + "keys.h++", project_ns_tokens());
 				add_writer("meta_table", outdir + "meta_table.h++", add_project_ns_tokens("metaspace"));
 				add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
+				add_writer("universal_tags", outdir + "universal_tags.h++", add_project_ns_tokens("universal_tags"));
+				add_writer("tiny_types", outdir + "tiny_types.h++", project_ns_tokens());
 
-				auto stream = [&](std::string key) -> code_writer& { return std::get<0>(writers.at(key)); };
-
+				//add #pragma once in all header files and the initial namespace
 				for(auto & item : writers)
 				{
 					std::get<0>(item.second).pragma("once");
@@ -69,6 +75,8 @@ namespace tagsql
 					generate_keys(stream("keys"));
 					generate_meta_table(stream("meta_table"));
 					generate_formatter(stream("formatter"));
+					generate_universal_tags(stream("universal_tags"));
+					generate_tiny_types(stream("tiny_types"));
 					
 					auto && template_files = get_templates();
 					for(auto const & template_file : template_files)
@@ -99,6 +107,39 @@ namespace tagsql
 			{
 				auto filter = [](std::string const & filename) { return ::foam::strlib::endswith(".template++", filename); };
 				return read_directory("templates", filter);
+			}
+			struct project_include_t
+			{
+				std::string data;
+				auto append(std::string file) -> project_include_t
+				{
+					data += "/" + file;
+					return std::move(*this);
+				}
+				operator std::string() const
+				{
+					return data; 
+				}
+			}_project_include {};
+
+			project_include_t project_include()
+			{
+				if (_project_include.data.empty())
+				{
+					_project_include.data = join("/", split(project_ns(), "::"));
+				}
+				return _project_include;
+			}
+			
+			void generate_tiny_types(code_writer & out)
+			{
+				out.include("type_traits");
+
+				out.writeln("struct null{}")
+				   .newline()
+				   .writeln("template<typename T>")
+				   .writeln("struct is_null : std::is_same<T,null> {};")
+				   .newline();
 			}
 			void generate_schema(code_writer & out)
 			{
@@ -177,6 +218,91 @@ namespace tagsql
 					generate_tags_for(table);
 					std::cout <<"ok" << std::endl;
 				}
+			}
+
+			struct universal_tag_info
+			{
+				std::vector<std::string> tables;
+				bool                     is_column;
+				bool                     is_table;
+			};
+			void generate_universal_tags(code_writer & out)
+			{
+				out.include(project_include().append("table.h++"));
+				out.include(project_include().append("tags_impl.h++"));
+				out.include(project_include().append("tiny_types.h++"));
+				
+				namespace fs = ::foam::strlib;
+
+				std::map<std::string, universal_tag_info> tag_map;
+				for (auto const & table : _meta.meta_tables() ) 
+				{
+					tag_map[table.name].is_table = true;
+					for(auto const & column : table.columns )
+					{
+						auto & tag_info = tag_map[column.name];
+						tag_info.is_column = true;
+						tag_info.tables.push_back(table.name);
+					}
+				}
+
+				out.open_ns("detail");
+				for(auto const p : tag_map)
+				{
+					auto const & tag_info = p.second;
+					if ( tag_info.is_column )
+					{
+						out.comment(fs::format("get meta-functions for {0}", p.first))
+						   .writeln("template<typename Table>")
+						   .writeln(fs::format("struct get_{0};", p.first))
+						   .newline();
+
+						for(auto const table : tag_info.tables )
+						{
+							out.writeln("template<>")
+							   .writeln(fs::format("struct get_{0}<schema::{1}_t> {{ using type = {1}_tag::{0}_t; }};", p.first, table))
+							   .newline();
+						}
+					}
+				}
+				out.close_ns();
+				
+				for(auto const p : tag_map)
+				{
+					auto const & tag_info = p.second;
+					out.newline()
+					   .begin_class(p.first + "_t", true, "static const")
+					   .writeln(fs::format("using _is_column = std::{0}_type;", tag_info.is_column ? "true" : "false"))
+					   .writeln(fs::format("using _is_table  = std::{0}_type;", tag_info.is_table ? "true" : "false"))
+					   .writeln(fs::format("using _is_unique = {0};", tag_info.is_table ? "null" : (tag_info.tables.size() == 1? "std::true_type" : "std::false_type")))
+					   .newline();
+					if ( tag_info.is_column )
+					{
+						out.writeln(fs::format("using tables = ::foam::meta::typelist<{0}>;", join(",", transform(tag_info.tables, [](std::string s) { return "schema::" + s + "_t"; }))))
+					   	   .newline()
+					       .writeln("template<typename Table>")
+					       .writeln(fs::format("struct get_column : detail::get_{0}<Table>{{}};", p.first))
+					       .newline();
+					}
+					if ( tag_info.is_table )
+					{
+						out.writeln(fs::format("using table = schema::{0}_t;", p.first))
+					       .newline();
+
+						auto const & mts = _meta.meta_tables();
+						auto const & it = std::find_if(mts.begin(), mts.end(), [&](meta::meta_table const & mt) { return mt.name == p.first; });
+						if ( it == mts.end() )
+							throw std::logic_error(fs::format("No table found with name '{0}'", p.first));
+						for(auto const & column : it->columns)
+						{
+							out.declare_variable(fs::format("{0}_tag::{1}_t", p.first, column.name), column.name);
+						}
+						out.newline();
+
+					}
+					out.end_class(p.first);
+				}
+
 			}
 			void generate_keys(code_writer & out)
 			{
