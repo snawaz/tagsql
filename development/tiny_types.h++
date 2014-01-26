@@ -6,7 +6,6 @@
 
 namespace tagsql { namespace development
 {
-
 	struct null {};
 
 	template<typename T>
@@ -15,4 +14,10 @@ namespace tagsql { namespace development
 	template<typename>
 	struct always_wrong : std::false_type {};
    
+	struct sink
+	{
+		template<typename ...T>
+		sink(T && ...) {}
+	};
+
 }} // tagsql # development

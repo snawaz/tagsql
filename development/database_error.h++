@@ -7,7 +7,6 @@
 
 namespace tagsql { namespace development
 {
-
 	class database_error : public std::exception
 	{
 		public:

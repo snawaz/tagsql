@@ -7,8 +7,6 @@
 
 namespace tagsql { namespace development
 {
-	//template<typename Tag>
-	//struct column;
 
 	template<typename Tag>
 	struct column_expression
