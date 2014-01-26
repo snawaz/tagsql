@@ -22,26 +22,26 @@ namespace tagsql { namespace development
 	template<typename T>
 	using DisableIfDeferredRange = typename std::enable_if<not _is_deferred_range<T>::value>::type;
 #endif 
-	template<typename Bucket>
-	class select_expression 
+	template<typename SelectQuery>
+	class select_clause 
     {
         public: 
-			select_expression(std::shared_ptr<pqxx::connection> & connection) : _connection(connection) {}
+			select_clause(std::shared_ptr<pqxx::connection> & connection) : _connection(connection) {}
    
 #if 1			
 			template<typename Table>
-			auto from(Table) -> composite_table<typename Bucket::template add_from<Table>::type>
+			auto from(Table) -> composite_table<typename SelectQuery::template add_from<Table>::type>
 			{
 				return { _connection, "FROM " + metaspace::meta_table<Table>::name() };
 			}
 #else			
 			template<typename Table, typename = DisableIfDeferredRange<Table> >
-			auto from(Table) -> composite_table<typename Bucket::template add_from<Table>::type>
+			auto from(Table) -> composite_table<typename SelectQuery::template add_from<Table>::type>
 			{
 				return { _connection, "FROM " + metaspace::meta_table<Table>::name() };
 			}
-			template<typename OtherBucket>
-			auto from(deferred_range<OtherBucket> r) -> composite_table<typename Bucket::template add_from<typename OtherBucket::from>::type>
+			template<typename OtherSelectQuery>
+			auto from(deferred_range<OtherSelectQuery> r) -> composite_table<typename SelectQuery::template add_from<typename OtherSelectQuery::from>::type>
 			{
 				return { _connection, "FROM (" + r.query_string() + ")"};
 				//return "FROM (" + r.query_string() + ")";

@@ -3,7 +3,7 @@
 #pragma once
 
 #include <tagsql/development/row_type_helper.h++>
-#include <tagsql/development/common_clauses.h++>
+#include <tagsql/development/clauses/common_clauses.h++>
 #include <tagsql/development/database_error.h++>
 #include <tagsql/development/clause_picker.h++>
 #include <tagsql/string_algo.h++>
@@ -17,25 +17,25 @@
 
 namespace tagsql { namespace development
 {
-    template<typename Bucket>
+    template<typename SelectQuery>
     struct value_type 
 	{
-		using type  = typename detail::row_type<typename Bucket::all_tables, typename Bucket::select>::type;
+		using type  = typename detail::row_type<typename SelectQuery::all_tables, typename SelectQuery::select>::type;
 	};
 
-    template<typename Bucket>
-    using value_type_t = typename value_type<Bucket>::type;
+    template<typename SelectQuery>
+    using value_type_t = typename value_type<SelectQuery>::type;
 
-    template<typename Bucket>
-    class deferred_range : public clause_picker<Bucket>
+    template<typename SelectQuery>
+    class deferred_range : public clause_picker<SelectQuery>
     {
 		public:
 			
 			using _is_deferred_range = std::true_type;
 
-			using bucket_type    = Bucket;
+			using select_query_type    = SelectQuery;
 #if 0			
-			using value_type     = typename detail::row_type<typename bucket_type::all_tables, typename bucket_type::select>::type;
+			using value_type     = typename detail::row_type<typename select_query_type::all_tables, typename select_query_type::select>::type;
 			using iterator       = typename std::vector<value_type>::iterator;
 			using const_iterator = typename std::vector<value_type>::const_iterator;
 			
@@ -94,7 +94,7 @@ namespace tagsql { namespace development
 			auto query_string() const -> std::string const &
 			{
 				typename value_type::taglist columnlist{};
-				static_check(columnlist, typename bucket_type::all_tables());
+				static_check(columnlist, typename select_query_type::all_tables());
 				return make_query_string(columnlist);
 			}
 		private:
@@ -168,11 +168,11 @@ namespace tagsql { namespace development
 			}
     
 			//index-based access : const and non-const versions
-			auto operator[](int index) -> value_type_t<Bucket> &
+			auto operator[](int index) -> value_type_t<SelectQuery> &
 			{
 				return deferred_exec().at(index);
 			}
-			auto operator[](int index) const -> value_type_t<Bucket> const &
+			auto operator[](int index) const -> value_type_t<SelectQuery> const &
 			{
 				return const_cast<deferred_range&>(*this).deferred_exec().at(index);
 			}
@@ -188,26 +188,26 @@ namespace tagsql { namespace development
 			}
 			
 			//representations
-			auto as_vector() const -> std::vector<value_type_t<Bucket>> const &
+			auto as_vector() const -> std::vector<value_type_t<SelectQuery>> const &
 			{
 				return const_cast<deferred_range&>(*this).deferred_exec();
 			}
-			auto move_as_vector() const -> std::vector<value_type_t<Bucket>> 
+			auto move_as_vector() const -> std::vector<value_type_t<SelectQuery>> 
 			{
-				std::vector<value_type_t<Bucket>> & items = const_cast<deferred_range&>(*this).deferred_exec();
+				std::vector<value_type_t<SelectQuery>> & items = const_cast<deferred_range&>(*this).deferred_exec();
 				_executed = false;
 				return std::move(items);
         	}
 			auto query_string() const -> std::string const &
 			{
-				typename value_type_t<Bucket>::taglist columnlist{};
-				static_check(columnlist, typename bucket_type::all_tables());
+				typename value_type_t<SelectQuery>::taglist columnlist{};
+				static_check(columnlist, typename select_query_type::all_tables());
 				return make_query_string(columnlist);
 			}
 		private:
-			std::vector<value_type_t<Bucket>>& deferred_exec()
+			std::vector<value_type_t<SelectQuery>>& deferred_exec()
 			{
-				return execute(typename value_type_t<Bucket>::indices());
+				return execute(typename value_type_t<SelectQuery>::indices());
 			}
 			template<typename ...Columns, typename Tables>
 			void static_check(::foam::meta::typelist<Columns...> const &, Tables const &) const
@@ -226,9 +226,9 @@ namespace tagsql { namespace development
 				return _query;
 			}
 			template<int ... N>
-			std::vector<value_type_t<Bucket>>& execute(foam::meta::seq<N...> const &)
+			std::vector<value_type_t<SelectQuery>>& execute(foam::meta::seq<N...> const &)
 			{
-				static std::vector<value_type_t<Bucket>>           _results;
+				static std::vector<value_type_t<SelectQuery>>           _results;
 				if ( _executed ) 
 					return _results;
 				_executed = true;
@@ -256,8 +256,8 @@ namespace tagsql { namespace development
 
     };
 
-	template<typename Bucket>
-	std::ostream& operator<<(std::ostream & out, deferred_range<Bucket> const & items)
+	template<typename SelectQuery>
+	std::ostream& operator<<(std::ostream & out, deferred_range<SelectQuery> const & items)
 	{
 		out << items.query_string() << std::endl;
 		for(auto const & item : items)

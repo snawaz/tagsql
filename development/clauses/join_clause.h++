@@ -9,24 +9,24 @@
 
 namespace tagsql { namespace development
 {
-    template<typename Bucket>
+    template<typename SelectQuery>
     class composite_table;
 
-	template<typename Bucket>
-	class join_expression 
+	template<typename SelectQuery>
+	class join_clause 
 	{
-			using table_type = typename Bucket::join_tables::template at<Bucket::join_tables::size-1>::type;
+			using table_type = typename SelectQuery::join_tables::template at<SelectQuery::join_tables::size-1>::type;
 		public:
     
-        	join_expression(std::shared_ptr<pqxx::connection> & connection, std::string query_without_select)
+        	join_clause(std::shared_ptr<pqxx::connection> & connection, std::string query_without_select)
             	: _connection(connection), _query_without_select(query_without_select)
         	{
-				static const std::string token = Bucket::joins::template at<Bucket::joins::size-1>::type::join_type::token;
+				static const std::string token = SelectQuery::joins::template at<SelectQuery::joins::size-1>::type::join_type::token;
 				_query_without_select +=  " " + token + "  " + metaspace::meta_table<table_type>::name();
         	}
 			
 			template<typename Condition>
-            auto on(Condition const & expr) -> composite_table<typename Bucket::template add_on<Condition>::type>
+            auto on(Condition const & expr) -> composite_table<typename SelectQuery::template add_on<Condition>::type>
             {
 				static_assert(is_condition_expression<Condition>::value, 
 						"Invalid Query : expression passed to on() is invalid. It must be a condition expression involving column(s).");

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <type_traits>
+#include <tagsql/development/tiny_types.h++>
 #include <foam/meta/typelist.h++>
 
 namespace tagsql { namespace development
@@ -15,11 +15,6 @@ namespace tagsql { namespace development
 		struct right { static constexpr char const * const token = "RIGHT JOIN"; };
 		struct full  { static constexpr char const * const token = "FULL JOIN"; };
 	}
-
-	struct null {};
-
-	template<typename T>
-	struct is_null : std::is_same<T,null> {};
 
 	template<
 			typename Table, 
@@ -51,7 +46,7 @@ namespace tagsql { namespace development
 			typename Offset    = null,                           //offset
 			typename Fetch     = null
 			>
-	struct bucket //tagistan : where all tags (the column tags, table tags, condition tags etc) reside.
+	struct select_query 
 	{
 
 		using select     = Select;
@@ -75,62 +70,62 @@ namespace tagsql { namespace development
 		template<typename Table>
 		struct add_from
 		{
-			using type = bucket<Select,Table,Joins,Ons,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,Table,Joins,Ons,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
 		};
 
 		template<typename Table, typename JoinType>
 		struct add_join
 		{
 			using TJoins = typename Joins::template push_back<join_tag<Table,JoinType>>::type;
-			using type = bucket<Select,From,TJoins,Ons,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,TJoins,Ons,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
 		};
 		
 		template<typename TOn>
 		struct add_on
 		{
 			using TOns = typename Ons::template push_back<TOn>::type;
-			using type = bucket<Select,From,Joins,TOns,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,Joins,TOns,Where,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
 		};
 		
 		template<typename TWhere>
 		struct add_where
 		{
-			using type = bucket<Select,From,Joins,Ons,TWhere,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,Joins,Ons,TWhere,GroupBy,Having,OrderBy,Limit,Offset,Fetch>;
 		};
 
 		template<typename TGroupBy>
 		struct add_group_by
 		{
 			static_assert(is_null<GroupBy>(), "Invalid query : group_by() is allowed exactly once.");
-			using type = bucket<Select,From,Joins,Ons,Where,TGroupBy,Having,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,Joins,Ons,Where,TGroupBy,Having,OrderBy,Limit,Offset,Fetch>;
 		};
 		
 		template<typename THaving>
 		struct add_having
 		{
 			static_assert(is_null<Having>(), "Invalid query : group_by() is allowed exactly once.");
-			using type = bucket<Select,From,Joins,Ons,Where,GroupBy,THaving,OrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,Joins,Ons,Where,GroupBy,THaving,OrderBy,Limit,Offset,Fetch>;
 		};
 		
 		template<typename TOrderBy>
 		struct add_order_by
 		{
 			static_assert(is_null<OrderBy>(), "Invalid query : order_by() is allowed exactly once.");
-			using type = bucket<Select,From,Joins,Ons,Where,GroupBy,Having,TOrderBy,Limit,Offset,Fetch>;
+			using type = select_query<Select,From,Joins,Ons,Where,GroupBy,Having,TOrderBy,Limit,Offset,Fetch>;
 		};
 
 		template<typename TLimit>
 		struct add_limit
 		{
 			static_assert(is_null<Limit>(), "Invalid query : limit() is allowed exactly once.");
-			using type = bucket<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,TLimit,Offset,maybe<Fetch>>;
+			using type = select_query<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,TLimit,Offset,maybe<Fetch>>;
 		};
 
 		template<typename TOffset>
 		struct add_offset
 		{
 			static_assert(is_null<Offset>(), "Invalid query : offset() is allowed exactly once.");
-			using type = bucket<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,maybe<Limit>,TOffset,Fetch>;
+			using type = select_query<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,maybe<Limit>,TOffset,Fetch>;
 		};
 
 		template<typename TFetch>
@@ -145,7 +140,7 @@ namespace tagsql { namespace development
 			 * So we follow what the Standard says here: enforce FETCH to come after OFFSET.
 			 */
 
-			using type = bucket<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,maybe<Limit>,maybe<Offset>,TFetch>;
+			using type = select_query<Select,From,Joins,Ons,maybe<Where>,maybe<GroupBy>,maybe<Having>,maybe<OrderBy>,maybe<Limit>,maybe<Offset>,TFetch>;
 		};
 	};
 

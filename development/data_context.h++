@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <tagsql/development/bucket.h++>
+#include <tagsql/development/select_query.h++>
 #include <tagsql/development/formatter.h++>
 #include <tagsql/development/update_expression.h++>
-#include <tagsql/development/select_expression.h++>
-#include <tagsql/development/common_clauses.h++>
+#include <tagsql/development/clauses/select_clause.h++>
+#include <tagsql/development/clauses/common_clauses.h++>
 
 
 namespace tagsql { namespace development
@@ -43,9 +43,9 @@ namespace tagsql { namespace development
     }
 
 	template<typename ...Columns>
-	struct make_select_expression 
+	struct make_select_clause 
 	{
-		using type = select_expression<bucket<::std::tuple<typename get_tag<Columns>::type...>>>;
+		using type = select_clause<select_query<::std::tuple<typename get_tag<Columns>::type...>>>;
 	};
 
     class data_context 
@@ -60,8 +60,7 @@ namespace tagsql { namespace development
 
         //select
         template<typename ... Columns>
-        auto select(Columns ... ) -> typename make_select_expression<Columns...>::type
-        //auto select(Columns ... ) -> select_expression<bucket<::foam::meta::typelist<Columns...>>>
+        auto select(Columns ... ) -> typename make_select_clause<Columns...>::type
         {
             return {_connection };
         }
