@@ -13,8 +13,8 @@
 #include <tuple>
 
 #include <foam/strlib/format.h>
-#include <tagsql/development/table.h++>
-#include <tagsql/development/meta_table.h++>
+#include <tagsql/development/schema/table.h++>
+#include <tagsql/development/schema/meta_table.h++>
 
 
 namespace tagsql { namespace development { namespace formatting

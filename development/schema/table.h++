@@ -6,7 +6,7 @@
 #include <foam/strlib/format.h>
 #include <string>
 #include <tagsql/development/column.h++>
-#include <tagsql/development/tags.h++>
+#include <tagsql/development/schema/tags.h++>
 #include <tagsql/development/named_tuple.h++>
 
 namespace tagsql { namespace development { namespace schema

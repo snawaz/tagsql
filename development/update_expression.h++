@@ -14,10 +14,10 @@
 
 #include <foam/strlib/format.h>
 #include <foam/meta/seq.h++>
-#include <tagsql/development/table.h++>
-#include <tagsql/development/meta_table.h++>
+#include <tagsql/development/schema/table.h++>
+#include <tagsql/development/schema/meta_table.h++>
 #include <tagsql/development/meta_column.h++>
-#include <tagsql/development/tags.h++>
+#include <tagsql/development/schema/tags.h++>
 
 #include <pqxx/pqxx>
 

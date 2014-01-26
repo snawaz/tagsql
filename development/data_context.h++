@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <tagsql/development/select_query.h++>
+#include <tagsql/development/query/select_query.h++>
 #include <tagsql/development/formatter.h++>
 #include <tagsql/development/update_expression.h++>
 #include <tagsql/development/clauses/select_clause.h++>

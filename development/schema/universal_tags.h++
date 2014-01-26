@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <tagsql/development/table.h++>
-#include <tagsql/development/tags_impl.h++>
+#include <tagsql/development/schema/table.h++>
+#include <tagsql/development/schema/tags_impl.h++>
 
 namespace tagsql { namespace development { namespace universal_tags
 {

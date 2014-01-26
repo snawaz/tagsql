@@ -6,7 +6,8 @@ namespace tagsql { namespace development
 {
     template<typename SelectQuery>
     class deferred_range;
-template<typename SelectQuery>
+
+	template<typename SelectQuery>
 	class where_clause 
 	{
 		public:

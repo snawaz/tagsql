@@ -2,9 +2,9 @@
 
 #include <iostream>
 #include "data_context.h++"
-#include "table.h++"
-#include "tags.h++"
-#include "universal_tags.h++"
+#include "schema/table.h++"
+#include "schema/tags.h++"
+#include "schema/universal_tags.h++"
 
 const tagsql::development::schema::author_t author{};
 const tagsql::development::schema::book_t book{};

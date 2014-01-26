@@ -10,8 +10,8 @@
 #include <string>
 #include <type_traits>
 
-#include <tagsql/development/table.h++>
-#include <tagsql/development/tags.h++>
+//#include <tagsql/development/table.h++>
+//#include <tagsql/development/tags.h++>
 #include <tagsql/development/named_tuple.h++>
 #include <foam/meta/seq.h++>
 #include <foam/meta/typelist.h++>
