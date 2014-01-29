@@ -9,6 +9,7 @@
 namespace tagsql { namespace formatting
 {
 
+	#if 0
 	template<typename Adaptor>
 	class formatter<::tagsql::schema::book_t, Adaptor>
 	{
@@ -49,5 +50,6 @@ namespace tagsql { namespace formatting
 			Adaptor        _adaptor;                
 			output_type    _output;
 	};
+	#endif
 
 }} //tagsql # formatting

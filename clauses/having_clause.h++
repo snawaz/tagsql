@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <tagsql/anatomy/expression.h++>
+
 namespace tagsql
 {
     template<typename SelectQuery>

@@ -4,10 +4,10 @@
 
 
 #include <string>
-#include <tagsql/schema/tags_impl.h++>
+#include <testing/testdb/tags_impl.h++>
 
 
-namespace tagsql
+namespace testing
 {
 
     /*

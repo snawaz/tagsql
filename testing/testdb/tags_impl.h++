@@ -8,7 +8,7 @@
 #include <tagsql/support/supported_types.h++>
 
 
-namespace tagsql
+namespace testing
 {
     namespace schema
     {
@@ -29,10 +29,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct created_t : metaspace::meta_column_t<schema::book_t,std::string,true,false>
+        struct created_t : ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
-			using sql_data_type = support::types::single<support::types::timestamp_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
+			using sql_data_type = tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
 
 			template<typename T>
 			struct named_member
@@ -60,10 +60,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct modified_t : metaspace::meta_column_t<schema::book_t,std::string,true,false>
+        struct modified_t : ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
-			using sql_data_type = support::types::single<support::types::timestamp_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
 
 			template<typename T>
 			struct named_member
@@ -91,10 +91,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct author_id_t : metaspace::meta_column_t<schema::book_t,long int,true,false>
+        struct author_id_t : ::tagsql::metaspace::meta_column_t<schema::book_t,long int,true,false>
         {
-            using base = metaspace::meta_column_t<schema::book_t,long int,true,false>;
-			using sql_data_type = support::types::single<support::types::bigserial_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::book_t,long int,true,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigserial_t>;
 
 			template<typename T>
 			struct named_member
@@ -122,10 +122,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct title_t : metaspace::meta_column_t<schema::book_t,std::string,true,false>
+        struct title_t : ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::book_t,std::string,true,false>;
-			using sql_data_type = support::types::multi<support::types::character_varying_t, 128>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_varying_t, 128>;
 
 			template<typename T>
 			struct named_member
@@ -153,10 +153,10 @@ namespace tagsql
         * + nullable       = false
         * + server_default = true
         */
-        struct book_id_t : metaspace::meta_column_t<schema::book_t,long int,false,true>
+        struct book_id_t : ::tagsql::metaspace::meta_column_t<schema::book_t,long int,false,true>
         {
-            using base = metaspace::meta_column_t<schema::book_t,long int,false,true>;
-			using sql_data_type = support::types::single<support::types::bigserial_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::book_t,long int,false,true>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigserial_t>;
 
 			template<typename T>
 			struct named_member
@@ -189,10 +189,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct created_t : metaspace::meta_column_t<schema::author_t,std::string,true,false>
+        struct created_t : ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
-			using sql_data_type = support::types::single<support::types::timestamp_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
 
 			template<typename T>
 			struct named_member
@@ -220,10 +220,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct modified_t : metaspace::meta_column_t<schema::author_t,std::string,true,false>
+        struct modified_t : ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
-			using sql_data_type = support::types::single<support::types::timestamp_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
 
 			template<typename T>
 			struct named_member
@@ -251,10 +251,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct age_t : metaspace::meta_column_t<schema::author_t,short,true,false>
+        struct age_t : ::tagsql::metaspace::meta_column_t<schema::author_t,short,true,false>
         {
-            using base = metaspace::meta_column_t<schema::author_t,short,true,false>;
-			using sql_data_type = support::types::single<support::types::smallint_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::author_t,short,true,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::smallint_t>;
 			
 			template<typename T>
 			struct named_member
@@ -282,10 +282,10 @@ namespace tagsql
         * + nullable       = true
         * + server_default = false
         */
-        struct name_t : metaspace::meta_column_t<schema::author_t,std::string,true,false>
+        struct name_t : ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>
         {
-            using base = metaspace::meta_column_t<schema::author_t,std::string,true,false>;
-			using sql_data_type = support::types::multi<support::types::character_t, 64>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_t, 64>;
 
 			template<typename T>
 			struct named_member
@@ -313,10 +313,10 @@ namespace tagsql
         * + nullable       = false
         * + server_default = true
         */
-        struct author_id_t : metaspace::meta_column_t<schema::author_t,long int,false,true>
+        struct author_id_t : ::tagsql::metaspace::meta_column_t<schema::author_t,long int,false,true>
         {
-            using base = metaspace::meta_column_t<schema::author_t,long int,false,true>;
-			using sql_data_type = support::types::single<support::types::bigserial_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::author_t,long int,false,true>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigserial_t>;
 
 			template<typename T>
 			struct named_member
@@ -340,10 +340,10 @@ namespace tagsql
 	
 	namespace review_tag
     {
-        struct review_id_t : metaspace::meta_column_t<schema::review_t, long int, false, true>
+        struct review_id_t : ::tagsql::metaspace::meta_column_t<schema::review_t, long int, false, true>
 		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false,true>;
-			using sql_data_type = support::types::single<support::types::bigserial_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,false,true>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigserial_t>;
 
 			template<typename T>
 			struct named_member
@@ -362,10 +362,10 @@ namespace tagsql
             static char const* type_name() { return "long int"; }
 		};
 
-        struct reviewer_id_t  :  metaspace::meta_column_t<schema::review_t, long int, false, false>
+        struct reviewer_id_t  :  ::tagsql::metaspace::meta_column_t<schema::review_t, long int, false, false>
 		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false,false>;
-			using sql_data_type = support::types::single<support::types::bigint_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,false,false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
 
 			template<typename T>
 			struct named_member
@@ -384,10 +384,10 @@ namespace tagsql
             static char const* type_name() { return "long int"; }
 		};
 
-        struct book_id_t :  metaspace::meta_column_t<schema::review_t, long int, false, false>
+        struct book_id_t :  ::tagsql::metaspace::meta_column_t<schema::review_t, long int, false, false>
 		{
-            using base = metaspace::meta_column_t<schema::review_t,long int,false, false>;
-			using sql_data_type = support::types::single<support::types::bigint_t>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,false, false>;
+			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
 			
 			template<typename T>
 			struct named_member
@@ -415,10 +415,10 @@ namespace tagsql
 			//friend std::ostream& operator<<(std::ostream & out, mystring const& item) { return out << "mystr::addr<" << &item << ">"; }
 		};
 
-        struct comment_t :  metaspace::meta_column_t<schema::review_t, mystring, true, false>
+        struct comment_t :  ::tagsql::metaspace::meta_column_t<schema::review_t, mystring, true, false>
 		{
-            using base = metaspace::meta_column_t<schema::review_t,mystring,true,false>;
-			using sql_data_type = support::types::multi<support::types::character_t, 2048>;
+            using base = ::tagsql::metaspace::meta_column_t<schema::review_t,mystring,true,false>;
+			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_t, 2048>;
 
 			template<typename T>
 			struct named_member
@@ -443,9 +443,9 @@ namespace tagsql
 namespace pqxx
 {
 	template<>
-	struct string_traits<tagsql::review_tag::mystring>
+	struct string_traits<testing::review_tag::mystring>
 	{
-		using mystring = tagsql::review_tag::mystring;
+		using mystring = testing::review_tag::mystring;
 
 		static void from_string(char const *, mystring &) {} 
 		static mystring null() { return {}; }

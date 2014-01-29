@@ -3,10 +3,10 @@
 #pragma once
 
 
-#include <tagsql/schema/tags_impl.h++>
+#include <testing/testdb/tags_impl.h++>
 
 
-namespace tagsql
+namespace testing
 {
 
     namespace book_tag

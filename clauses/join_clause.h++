@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <tagsql/schema/meta_table.h++>
+#include <tagsql/meta_table_base.h++>
+#include <tagsql/anatomy/expression.h++>
 
 #include <string>
 #include <pqxx/pqxx>

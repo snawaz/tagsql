@@ -69,7 +69,7 @@ namespace tagsql
 			template<typename Table>
 			auto insert(Table const & item) -> std::string
 			{
-				return execute(query::for_insert(item));
+				return "NotImplemented"; //execute(query::for_insert(item));
 			}
     
 			//update

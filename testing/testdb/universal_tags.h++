@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include <tagsql/schema/table.h++>
-#include <tagsql/schema/tags_impl.h++>
+#include <testing/testdb/table.h++>
+#include <testing/testdb/tags_impl.h++>
 
-namespace tagsql { namespace universal_tags
+namespace testing { namespace universal_tags
 {
 	namespace detail
 	{
@@ -37,7 +37,7 @@ namespace tagsql { namespace universal_tags
 		using _is_table     = std::true_type;
 		using _is_unique    = std::true_type;
 
-		using table = tagsql::schema::book_t;
+		using table = testing::schema::book_t;
 	}book;
 
-}} //tagsql # universal_tags
+}} //testing # universal_tags

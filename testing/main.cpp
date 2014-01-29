@@ -1,29 +1,28 @@
 
 
 #include <iostream>
-#include "data_context.h++"
-#include "schema/table.h++"
-#include "schema/tags.h++"
-#include "schema/universal_tags.h++"
 
-const tagsql::schema::author_t author{};
-const tagsql::schema::book_t book{};
-const tagsql::schema::review_t review{};
+#include <testing/testdb.h++>
 
-using namespace tagsql;
+const testing::schema::author_t author{};
+const testing::schema::book_t book{};
+const testing::schema::review_t review{};
+
+using namespace testing;
+//using namespace tagsql;
 
 template<typename NamedTuple>
 void fff(NamedTuple item)
 {
 	std::cout << item << std::endl;
 }
-void f(named_tuple<author_tag::name_t, author_tag::age_t> item)
+void f(tagsql::named_tuple<author_tag::name_t, author_tag::age_t> item)
 {
 	std::cout << "f() => " << item.name << "," << item.age << std::endl;
 	std::cout << "f() => " << item.at<0>() <<"," << item[author.age] << std::endl;
 }
 
-void h(named_tuple<author_tag::age_t, author_tag::name_t> item)
+void h(tagsql::named_tuple<author_tag::age_t, author_tag::name_t> item)
 {
 	std::cout << "h() => " << item.age << "," << item.name << std::endl;
 	std::cout << "h() => " << item << std::endl;
@@ -31,7 +30,7 @@ void h(named_tuple<author_tag::age_t, author_tag::name_t> item)
 
 
 //void g(named_tuple<author_tag::name_t, author_tag::created_t> item)
-void g(named_tuple<author_tag::name_t> item)
+void g(tagsql::named_tuple<author_tag::name_t> item)
 {
 	std::cout << "g() => " << item.name << std::endl;
 	std::cout << "g() => " << item << std::endl;
@@ -39,7 +38,7 @@ void g(named_tuple<author_tag::name_t> item)
 
 void test_universal_tags(tagsql::data_context & dc)
 {
-	namespace t=tagsql::universal_tags;
+	namespace t=testing::universal_tags;
 
 	std::cout << dc.select(t::created).from(book) << std::endl;
 	std::cout << dc.select(t::created).from(author) << std::endl;
@@ -51,10 +50,10 @@ void test_universal_tags(tagsql::data_context & dc)
 void test_select(tagsql::data_context & dc)
 {
 	using namespace tagsql;
-	using namespace tagsql::schema;
-	namespace at = tagsql::author_tag;
-	namespace bt = tagsql::book_tag;
-	namespace rt = tagsql::review_tag;
+	using namespace testing::schema;
+	namespace at = testing::author_tag;
+	namespace bt = testing::book_tag;
+	namespace rt = testing::review_tag;
 
 	for(auto const & item : dc.select().from(author))
 	{
@@ -107,7 +106,7 @@ void test_select(tagsql::data_context & dc)
 
 void test_insert(tagsql::data_context & dc)
 {
-	using namespace tagsql::schema;
+	using namespace testing::schema;
 	author_t a {};
 	a.name = "Saurabh";
 	a.age = 20;
@@ -115,10 +114,10 @@ void test_insert(tagsql::data_context & dc)
 }
 void test_join(tagsql::data_context & dc)
 {
-	using namespace tagsql::schema;
-	namespace at = tagsql::author_tag;
-	namespace bt = tagsql::book_tag;
-	namespace rt = tagsql::review_tag;
+	using namespace testing::schema;
+	namespace at = testing::author_tag;
+	namespace bt = testing::book_tag;
+	namespace rt = testing::review_tag;
 
 #if 0
 	auto items = dc.select(at::name, bt::title)

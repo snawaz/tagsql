@@ -9,8 +9,8 @@
 #include <tuple>
 
 #include <foam/strlib/format.h>
-#include <tagsql/schema/table.h++>
-#include <tagsql/schema/meta_table.h++>
+//#include <tagsql/schema/table.h++>
+//#include <tagsql/schema/meta_table.h++>
 
 
 namespace tagsql { namespace formatting
@@ -51,7 +51,7 @@ namespace tagsql { namespace formatting
 			template<typename Column>
 			void write(Column const & value, value_type & output)
 			{
-				using tagsql::metaspace::meta_table;
+//				using tagsql::metaspace::meta_table;
     
 				if ( value.is_null() )
 				{ 
