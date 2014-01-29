@@ -4,7 +4,7 @@
 
 
 #include <string>
-#include <tagsql/meta_column.h++>
+#include <tagsql/core/meta_column.h++>
 #include <tagsql/support/supported_types.h++>
 
 

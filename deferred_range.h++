@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include <tagsql/row_type_helper.h++>
+#include <tagsql/core/row_type_helper.h++>
 #include <tagsql/clauses/common_clauses.h++>
-#include <tagsql/database_error.h++>
-#include <tagsql/clause_picker.h++>
+#include <tagsql/common/exceptions.h++>
+#include <tagsql/core/clause_picker.h++>
 #include <tagsql/rhea/string_algo.h++>
 
 #include <vector>

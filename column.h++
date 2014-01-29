@@ -10,17 +10,14 @@
 #include <foam/meta/typelist.h++>
 #include <foam/optional.h>
 
+#include <tagsql/common/exceptions.h++>
+
 #include <pqxx/pqxx>
 
 
 namespace tagsql
 {
-	struct parse_exception : std::runtime_error
-	{
-		using std::runtime_error::runtime_error;
-	};
-   
-	template<typename ...Tags>
+	template<typename ... Tags>
 	struct named_tuple;
 
 	namespace bare

@@ -14,7 +14,7 @@
 
 #include <foam/strlib/format.h>
 #include <foam/meta/seq.h++>
-#include <tagsql/meta_column.h++>
+#include <tagsql/core/meta_column.h++>
 
 #include <pqxx/pqxx>
 

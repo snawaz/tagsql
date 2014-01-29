@@ -9,8 +9,8 @@
 
 #include <type_traits>
 
-#include <tagsql/meta_table_base.h++>
-#include <tagsql/meta_column.h++>
+#include <tagsql/core/meta_table_base.h++>
+#include <tagsql/core/meta_column.h++>
 #include <foam/meta/typelist.h++>
 
 

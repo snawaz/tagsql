@@ -3,7 +3,7 @@
 #pragma once
 
 
-#include <tagsql/insert_adaptor.h++>
+#include <tagsql/core/insert_adaptor.h++>
 
 
 namespace tagsql { namespace formatting

@@ -4,8 +4,7 @@
 
 #include <tagsql/clauses/join_clause.h++>
 #include <tagsql/deferred_range.h++>
-//#include <tagsql/schema/meta_table.h++>
-#include <tagsql/meta_table_base.h++>
+#include <tagsql/core/meta_table_base.h++>
 
 #include <string>
 #include <pqxx/pqxx>

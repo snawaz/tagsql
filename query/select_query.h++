@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <tagsql/tiny_types.h++>
+#include <tagsql/core/tiny_types.h++>
 #include <foam/meta/typelist.h++>
 
 namespace tagsql 

@@ -7,8 +7,8 @@
 #pragma once
 
 #include <tagsql/query/select_query.h++>
-#include <tagsql/formatter.h++>
-#include <tagsql/update_expression.h++>
+#include <tagsql/core/formatter.h++>
+#include <tagsql/core/update_expression.h++>
 #include <tagsql/clauses/select_clause.h++>
 #include <tagsql/clauses/common_clauses.h++>
 

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <tagsql/composite_table.h++>
+#include <tagsql/core/composite_table.h++>
 
 #include <pqxx/pqxx>
 

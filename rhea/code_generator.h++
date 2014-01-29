@@ -15,7 +15,7 @@
 #include "code_writer.h++"
 #include "config_reader.h++"
 #include "string_algo.h++"
-#include "exceptions.h++"
+#include <tagsql/common/exceptions.h++>
 #include "supported_types.h++"
 
 namespace tagsql 

@@ -6,7 +6,7 @@
 #include <foam/meta/typelist.h++>
 #include <string>
 #include <tagsql/column.h++>
-#include <tagsql/operators.h++>
+#include <tagsql/operators/all.h++>
 
 namespace tagsql { namespace support
 {
@@ -47,7 +47,7 @@ namespace tagsql { namespace support
 		struct single 
 		{
 			template<typename Tag>
-			struct operators : op::eq_t<Tag> {};
+			struct operators : operators::equal_t<Tag> {};
 		};
 
 		template<typename DbType, std::size_t Size>
@@ -56,7 +56,7 @@ namespace tagsql { namespace support
 			static constexpr std::size_t size = Size;
 
 			template<typename Tag>
-			struct operators : op::eq_t<Tag> {};
+			struct operators : operators::equal_t<Tag> {};
 		};
 	
 		template<std::size_t Size>
@@ -65,7 +65,7 @@ namespace tagsql { namespace support
 			static constexpr std::size_t size = Size;
 
 			template<typename Tag>
-			struct operators : op::eq_t<Tag>, op::like_t<Tag> {};
+			struct operators : operators::equal_t<Tag>, operators::like_t<Tag> {};
 		};
 	}
 	

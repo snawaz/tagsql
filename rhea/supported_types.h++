@@ -4,7 +4,7 @@
 
 #include <map>
 #include <string>
-#include "exceptions.h++"
+#include <tagsql/common/exceptions.h++>
 
 namespace tagsql
 {

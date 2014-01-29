@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <tagsql/meta_table_base.h++>
+#include <tagsql/core/meta_table_base.h++>
 #include <tagsql/anatomy/expression.h++>
 
 #include <string>

@@ -11,7 +11,7 @@
 #include <foam/meta/seq.h++>
 
 #include <tagsql/column.h++>
-#include <tagsql/tiny_types.h++>
+#include <tagsql/core/tiny_types.h++>
 
 #include <tuple>
 

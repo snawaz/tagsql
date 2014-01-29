@@ -8,10 +8,8 @@
 #include <map>
 #include <tuple>
 
+#include <tagsql/common/exceptions.h++>
 #include <foam/strlib/format.h>
-//#include <tagsql/schema/table.h++>
-//#include <tagsql/schema/meta_table.h++>
-
 
 namespace tagsql { namespace formatting
 {
@@ -37,11 +35,6 @@ namespace tagsql { namespace formatting
     
 	template<typename T, typename Adaptor>
 	class formatter;
-    
-	struct constraint_violation : public std::runtime_error
-	{
-		using std::runtime_error::runtime_error;
-	};
     
 	class sql_insert_adaptor
 	{
