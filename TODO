@@ -1,29 +1,110 @@
-METADATA RESOURCES
-=================
+Syntax
+======
 
-1. information_schema.columns
-     - gives column, default value (if any), nullable, data type etc.
-2. given schema and table name, the following query returns all columns along with useful informations:
+	auto items = dc.select(name, age).from(person).where(qualification == "BA");
+	
+	OR
 
-SELECT ordinal_position, tab_columns.column_name, data_type, character_maximum_length,
-numeric_precision, is_nullable, tab_constraints.constraint_type, col_constraints.constraint_name,
-col_check_constraints.check_clause
-FROM information_schema.columns AS tab_columns
-LEFT OUTER JOIN
-information_schema.constraint_column_usage AS col_constraints
-ON tab_columns.table_name = col_constraints.table_name AND
-tab_columns.column_name = col_constraints.column_name
-LEFT OUTER JOIN
-information_schema.table_constraints AS tab_constraints
-ON tab_constraints.constraint_name = col_constraints.constraint_name
-LEFT OUTER JOIN
-information_schema.check_constraints AS col_check_constraints
-ON col_check_constraints.constraint_name = tab_constraints.constraint_name
-WHERE tab_columns.table_name = 'author' AND
-tab_columns.table_schema = 'public'
-ORDER BY ordinal_position;
+	auto items = dc.select(person.name, person.age).from(person).where(person.qualification == "BA");
 
-3. And this gives user-defined tables (not sure if it is reliable):
 
-SELECT table_name FROM information_schema.tables
-WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema'); 
+	OR
+
+	
+	auto query = query::select(name, age).from(person).join(book).on(book.author_id == person.person_id).where(qualification == "BA");
+
+
+	auto items = query.use(db);      //use on db connection
+
+	auto items = query.use(persons,authors); //reuse on local source
+
+
+Features
+========
+
+	- Type-safety.
+	- Constraint checks (throughout).
+	- Easy access.
+	- Deferred execution.
+	- Different types of data sources: DB collections as well as in-memory collections.
+	- Query reuse.
+
+
+Example Sample Query
+====================
+
+select U.business_site_name, U.category_hierarchy_string, C.category_name 
+from( (select business_site_name, category_hierarchy_id from business_site as A, category_map as B where A.business_site_id = B.business_site_id) as S 
+	   inner join category_hierarchy as T on S.category_hierarchy_id = T.category_hierarchy_id) as U
+inner join category as C on C.category_id = U.level1_category_id
+
+
+TODO LIST
+=========
+
+	- clause
+		- select                                     - DONE
+		- from                                       - DONE
+		- join {inner, left, right, full, cross}     - DONE 
+		- on                                         - DONE
+		- where                                      - DONE
+		- group by                                   - DONE but without static checks!
+		- having                                     - DONE
+		- order by { ASC | DESC }                    - DONE but without 'using operator'
+		- limit { count | ALL }                      - DONE
+		- offset                                     - DONE
+		- fetch                                      - DONE
+	
+	- sub-query
+		- from(sub-query)            - 
+	
+	- aggregate functions
+		- sum                        -
+		- avg                        -
+
+	- features
+		- implicit truncate conversion of named_tuple when target named_tuple has subset of source tags.   - DONE
+		- std::ostream<< for named_tuple, and use default implementation for types which don't support <<. - DONE
+		- members of named_tuple should be column<tag>.    - DONE
+		- various ways to access value from name_tuple     - DONE
+			- member-based : column c = tuple.name;        - DONE
+			- tag-base  d  : column c = tuple[name];       - DONE
+			- index-tagsed : column c = tuple.at<index>(); - DONE
+		- various ways to access value from column    - DONE
+			- member-function : T v = column.value(); - DONE
+			- function-like   : T v = column();       - DONE
+			- implicit conv   : T v = column;         - DONE
+
+	- design and implementations:
+		- implement table in terms of named_tuple   - DONE
+		
+		
+
+CHECK LIST
+==========
+
+	- Checks should be done at all stages, for all tags - select, where, and on.
+
+		auto items = dc.select(author.name).from(author).where(person.person_id == 100);
+		auto items = dc.select(person.name).from(author).where(author.author_id == 100);
+		auto items = dc.select(person.name, author.name).from(author).join(person).on(person.person_id == book.author_id);
+		auto items = dc.select(person.name, author.name).from(author).join(person).on(author.author_id == person.person_id);
+
+		All of these MUST FAIL at compile-time:
+			- the first will fail, because wrong table is used in where().
+			- the second will fail, because wrong table is used in select().
+			- the third will fail, because in on() book is not captured, neither in from(), nor in join().
+			- the fourth will fail, because person is not used in on().
+		
+		auto items = dc.select(person.name, person.name).from(person);
+
+		MUST FAIL at compile-time because:
+			- duplicate columns appear in the select-clause.
+
+	- The definition of tables must be syntactic sugar, which means they must derive from named_tuple, so that generalized code can be written. 
+	  For example, a single implementation of std::ostream<< would work for all tables, as well as for named_tuples!
+	  	
+	  	struct person : named_tuple<pt::name_t, 
+		                            pt::age_t, 
+									pt::qualification_t>{};
+
