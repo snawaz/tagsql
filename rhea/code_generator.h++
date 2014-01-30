@@ -10,13 +10,14 @@
 #include <foam/strlib/format.h>
 #include <foam/strlib/strlib.h>
 
-#include "platform.h++"
-#include "metadata.h++"
-#include "code_writer.h++"
-#include "config_reader.h++"
-#include "string_algo.h++"
 #include <tagsql/common/exceptions.h++>
-#include "supported_types.h++"
+
+#include <tagsql/rhea/platform.h++>
+#include <tagsql/rhea/metadata.h++>
+#include <tagsql/rhea/code_writer.h++>
+#include <tagsql/rhea/config_reader.h++>
+#include <tagsql/rhea/string_algo.h++>
+#include <tagsql/rhea/supported_types.h++>
 
 namespace tagsql 
 {
@@ -28,17 +29,42 @@ namespace tagsql
 			
 			void generate()
 			{
-				std::string outdir = _config["srcdir"];
+				namespace fs = ::foam::strlib;
+
+				std::string source_path  = _config["source_path"];
+				std::string include_path = _config["include_path"];
+				if ( ! fs::endswith(include_path, source_path) )
+					throw syntax_error(fs::format("in the config, the include_path '{0}' must be a suffix of source_path '{1}'", include_path, source_path));
+
+				auto outdir = std::move(source_path);
 				if ( outdir.back() != '/' ) 
 					outdir += '/';
 
-				ensure_dir(outdir);
-				
+				outdir += _config["dbspace"];
+				if ( outdir.back() != '/' ) 
+					outdir += '/';
+
+				try
+				{
+					fs::print("ensuring '{0}' exists (create if it doesn't) ... ", outdir);
+					ensure_dir(outdir);
+					fs::println("ok");
+				}
+				catch(...)
+				{
+					fs::println("no");
+					throw;
+				}
+
 				auto add_project_ns_tokens = [=](std::string item) mutable 
 				{ 
 					auto  copy = this->project_ns_tokens(); 
 					copy.push_back(std::move(item)); 
 					return copy; 
+				}; 
+				auto add_tagsql_ns_tokens = [=](std::string item) mutable 
+				{ 
+					return std::vector<std::string>{"tagsql", item};
 				}; 
 
 				std::map<std::string, std::tuple<code_writer, std::vector<std::string>>> writers;
@@ -55,9 +81,10 @@ namespace tagsql
 				add_writer("tags", outdir + "tags.h++", project_ns_tokens());
 				add_writer("tags_impl", outdir + "tags_impl.h++", project_ns_tokens());
 				add_writer("keys", outdir + "keys.h++", project_ns_tokens());
-				add_writer("meta_table", outdir + "meta_table.h++", add_project_ns_tokens("metaspace"));
-				//add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
+				add_writer("meta_table", outdir + "meta_table.h++", add_tagsql_ns_tokens("metaspace"));
 				add_writer("universal_tags", outdir + "universal_tags.h++", add_project_ns_tokens("universal_tags"));
+				add_writer("__easy_include__", outdir + _config["dbspace"] + ".h++", {});
+				//add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
 
 				//add #pragma once in all header files and the initial namespace
 				for(auto & item : writers)
@@ -75,18 +102,19 @@ namespace tagsql
 					generate_tags_impl(stream("tags_impl"));
 					generate_universal_tags(stream("universal_tags"));
 					//generate_formatter(stream("formatter"));
-#if 0					
-					auto && template_files = get_templates();
-					for(auto const & template_file : template_files)
+
+					auto & out = stream("__easy_include__");
+					out.include(tagsql_include().append("data_context.h++"));
+					out.newline();
+					for(auto const & i : writers)
 					{
-						auto outfile = template_file.substr(0, template_file.size() - 10) + "h++"; 
-						generate_from_template(outdir + outfile, "templates/" + template_file);
+						if (i.first != "__easy_include__")
+							out.include(project_include().append(i.first + ".h++"));
 					}
-#endif					
 				}
 				catch(...)
 				{
-					std::cout << "no" << std::endl;
+					fs::println("no");
 					throw;
 				}
 			}
@@ -95,24 +123,17 @@ namespace tagsql
 
 			std::string project_ns() 
 			{
-				return _config["namespace"]; 
+				return _config["namespace"] + "::" + _config["dbspace"] ; 
 			}
 			std::vector<std::string> project_ns_tokens()
 			{
 				static auto tokens = split(project_ns(), "::");
 				return tokens;
 			}
-#if 0			
-			auto get_templates() -> std::vector<std::string>
-			{
-				auto filter = [](std::string const & filename) { return ::foam::strlib::endswith(".template++", filename); };
-				return read_directory("templates", filter);
-			}
-#endif			
-			struct project_include_t
+			struct include_t
 			{
 				std::string data;
-				auto append(std::string file) -> project_include_t
+				auto append(std::string file) -> include_t
 				{
 					data += "/" + file;
 					return std::move(*this);
@@ -121,20 +142,32 @@ namespace tagsql
 				{
 					return data; 
 				}
-			}_project_include {};
+			};
 
-			project_include_t project_include()
+			include_t _project_include;
+			include_t project_include()
 			{
 				if (_project_include.data.empty())
 				{
-					_project_include.data = join("/", split(project_ns(), "::"));
+					auto path = _config["include_path"]; 
+					if ( path.back() != '/' )
+						path += "/";
+					path += _config["dbspace"];
+					_project_include.data = std::move(path);
 				}
 				return _project_include;
 			}
+
+			include_t _tagsql_include {"tagsql"};
+			include_t tagsql_include()
+			{
+				return _tagsql_include;
+			}
+
 			void generate_schema(code_writer & out)
 			{
-				out.include(join("/", project_ns_tokens()) + "/named_tuple.h++");
-				out.include(join("/", project_ns_tokens()) + "/tags.h++");
+				out.include(tagsql_include().append("named_tuple.h++"));
+				out.include(project_include().append("tags.h++"));
 				
 				auto generate_schema_for = [&](meta::meta_table const & table)
 				{
@@ -146,7 +179,7 @@ namespace tagsql
 					out.newline()
 					   .comment("This definition of schema for table '" + table.name + "'.")
 					   .writeln(fs::format("namespace txzi{0} = ::{1}::{2}_tag;", tag_id, project_ns(), table.name));
-					out.write(fs::format("using {0}_t = named_tuple<", table.name));
+					out.write(fs::format("using _{0}_base_t = ::tagsql::named_tuple<", table.name));
 					std::string spaces = out.spaces_();
 					auto const & columns = table.columns;
 					auto widen = [](std::string const & s, std::size_t w) 
@@ -169,7 +202,10 @@ namespace tagsql
 						else
 							out.write("\n" + spaces + widen(fs::format("txzi{0}::{1}_t,", tag_id, c.name), 25), 0, comment);
 					}
-					out.writeln(fs::format("\n{0}>;", spaces.substr(0, spaces.size()-2)));
+					out.writeln(fs::format("\n{0}>;", spaces.substr(0, spaces.size()-2)))
+					   .begin_class(fs::format("{0}_t : public _{0}_base_t", table.name), true)
+					   .writeln(fs::format("using  _{0}_base_t::_{0}_base_t;", table.name))
+					   .end_class();
 				};
 
 				for (auto const & table : _meta.meta_tables() )
@@ -181,7 +217,7 @@ namespace tagsql
 			}
 			void generate_tags(code_writer & out)
 			{
-				out.include(join("/", project_ns_tokens()) + "/tags_impl.h++");
+				out.include(project_include().append("tags_impl.h++"));
 				
 				auto generate_tags_for = [&](meta::meta_table const & table)
 				{
@@ -220,7 +256,7 @@ namespace tagsql
 			{
 				out.include(project_include().append("table.h++"));
 				out.include(project_include().append("tags_impl.h++"));
-				out.include(project_include().append("tiny_types.h++"));
+				out.include(tagsql_include().append("core/tiny_types.h++"));
 				
 				namespace fs = ::foam::strlib;
 
@@ -264,7 +300,7 @@ namespace tagsql
 					   .begin_class(p.first + "_t", true, "static const")
 					   .writeln(fs::format("using _is_column = std::{0}_type;", tag_info.is_column ? "true" : "false"))
 					   .writeln(fs::format("using _is_table  = std::{0}_type;", tag_info.is_table ? "true" : "false"))
-					   .writeln(fs::format("using _is_unique = {0};", tag_info.is_table ? "null" : (tag_info.tables.size() == 1? "std::true_type" : "std::false_type")))
+					   .writeln(fs::format("using _is_unique = {0};", tag_info.is_table ? "::tagsql::null" : (tag_info.tables.size() == 1? "std::true_type" : "std::false_type")))
 					   .newline();
 					if ( tag_info.is_column )
 					{
@@ -296,7 +332,7 @@ namespace tagsql
 			}
 			void generate_keys(code_writer & out)
 			{
-				out.include(join("/", project_ns_tokens()) + "/tags_impl.h++");
+				out.include(project_include().append("tags_impl.h++"));
 
 				auto generate_keys_for = [&](meta::meta_table const & table)
 				{
@@ -335,10 +371,12 @@ namespace tagsql
 			
 			void generate_tags_impl(code_writer & out)
 			{
-				out.include(join("/", project_ns_tokens()) + "/meta_column.h++");
+				out.include(tagsql_include().append("core/meta_column.h++"));
+				out.include(tagsql_include().append("support/supported_types.h++"));
+
 				out.open_ns("schema");
 				for (auto const & table : _meta.meta_tables() ) 
-					out.writeln("struct " + table.name + ";");
+					out.writeln("struct " + table.name + "_t;");
 				out.close_ns();
 				auto generate_tags_impl_for = [&](meta::meta_table const & table)
 				{
@@ -350,12 +388,12 @@ namespace tagsql
 					for(auto const & c : table.columns)
 					{
 						auto mapped = _mapper[c.type];
-						auto base = fs::format("metaspace::meta_column_t<schema::{0},{1},{2},{3}>", table.name, mapped.type, bool_(c.is_nullable), bool_(c.has_server_default));
+						auto base = fs::format("::tagsql::metaspace::meta_column_t<schema::{0}_t,{1},{2},{3}>", table.name, mapped.type, bool_(c.is_nullable), bool_(c.has_server_default));
 						auto ti = get_type_info(c.type);
 						auto size = c.character_max_length + ti.size; //assumption : one of the operand is expected to be zero (untested)
 						auto sql_data_type = size
-												? fs::format("support::types::multi<support::types::{0},{1}>", ti.name, size)
-												: fs::format("support::types::single<support::types::{0}>", ti.name);
+												? fs::format("::tagsql::support::types::multi<::tagsql::support::types::{0},{1}>", ti.name, size)
+												: fs::format("::tagsql::support::types::single<::tagsql::support::types::{0}>", ti.name);
 
 						out.mcomment(fs::format("column_name    = {0}", c.name),
 										size 
@@ -395,8 +433,9 @@ namespace tagsql
 			
 			void generate_meta_table(code_writer & out)
 			{
-				out.include(join("/", project_ns_tokens()) + "/meta_table_base.h++");
-				out.include(join("/", project_ns_tokens()) + "/keys.h++");
+				out.include(tagsql_include().append("core/meta_table_base.h++"));
+				out.include(project_include().append("keys.h++"));
+				out.include(project_include().append("table.h++"));
 				
 				auto generate_meta_table_for = [&](meta::meta_table const & table)
 				{
@@ -404,11 +443,11 @@ namespace tagsql
 
 					out.newline()
 					   .writeln("template<>")
-					   .begin_class(fs::format("meta_table<{0}::schema::{1}> : public meta_table_base<{0}::schema::{1}>", project_ns(), table.name), true)
+					   .begin_class(fs::format("meta_table<::{0}::schema::{1}_t> : public meta_table_base<::{0}::schema::{1}_t>", project_ns(), table.name), true)
 					   .writeln(fs::format("using  sequence_type = ::foam::meta::genseq_t<{0}>;", table.columns.size()))
-					   .writeln(fs::format("using  primary_key   = {0}::{1}_tag::primary_key;", project_ns(), table.name))
-					   .writeln(fs::format("using  foreign_keys  = {0}::{1}_tag::foreign_keys;", project_ns(), table.name))
-					   .writeln(fs::format("using  columns_tuple = {0}::{1}_tag::all;", project_ns(), table.name))
+					   .writeln(fs::format("using  primary_key   = ::{0}::{1}_tag::primary_key;", project_ns(), table.name))
+					   .writeln(fs::format("using  foreign_keys  = ::{0}::{1}_tag::foreign_keys;", project_ns(), table.name))
+					   .writeln(fs::format("using  columns_tuple = ::{0}::{1}_tag::all;", project_ns(), table.name))
 					   .writeln(fs::format("static std::string name() {{  return \"{0}\"; }}", table.name))
 					   .writeln("static sequence_type index_sequence() { return {}; }")
 					   .writeln(fs::format("static constexpr std::size_t size() {{ return {0}; }}",table.columns.size()))
@@ -456,68 +495,6 @@ namespace tagsql
 					generate_formatter_for(table);
 					std::cout <<"ok" << std::endl;
 				}
-			}
-			void generate_from_template(std::string outfile, std::string template_file)
-			{
-				namespace fs = ::foam::strlib;
-				
-				fs::print("Generating C++ {0} from {1} ... ", outfile, template_file);
-		
-				auto __BEGIN_HEADER__    = "__BEGIN_HEADER__";
-				auto __END_HEADER__      = "__END_HEADER__";
-				auto __BEGIN_NAMESPACE__ = "__BEGIN_NAMESPACE__";
-				auto __END_NAMESPACE__   = "__END_NAMESPACE__";
-				auto __NAMESPACE__       = "__NAMESPACE__";
-
-				code_writer out { outfile };
-				std::ifstream file { template_file };
-	
-				char const *mode = nullptr;
-				for (std::string line; std::getline(file, line); )
-				{
-					if ( line.find(__BEGIN_HEADER__) != std::string::npos )
-					{
-						if ( mode != nullptr )
-							throw syntax_error(fs::format("__BEGIN_HEADER__ must not appear without closing previous {0} first. template = {1}", mode, template_file));
-						mode = __BEGIN_HEADER__;
-					}
-					else if ( line.find(__BEGIN_NAMESPACE__) != std::string::npos )
-					{
-						if ( mode != nullptr )
-							throw syntax_error(fs::format("__BEGIN_NAMESPACE__ must not appear without closing previous {0} first. template = {1}", mode, template_file));
-						mode = __BEGIN_NAMESPACE__;
-						auto tokens = split(line, "(");
-						auto ns = project_ns_tokens();
-						if (tokens.size() != 1)
-						{
-							auto more = split(tokens[1].substr(0, tokens[1].size() -1), "::");
-							ns.insert(ns.end(), more.begin(), more.end());
-						}
-						out.open_ns(ns);
-					}
-					else if ( line.find(__END_HEADER__) != std::string::npos )
-					{
-						if ( mode != __BEGIN_HEADER__ )
-							throw syntax_error(fs::format("__END_HEADER__ must be preceded by __BEGIN_HEADER__. template = {0}", template_file));
-						mode = nullptr;
-					}
-					else if ( line.find(__END_NAMESPACE__) != std::string::npos )
-					{
-						if ( mode != __BEGIN_NAMESPACE__ )
-							throw syntax_error(fs::format("__END_NAMESPACE__ must be preceded by __BEGIN_NAMESPACE__. template = {0}", template_file));
-						mode = nullptr;
-						out.close_ns();
-					}
-					else if ( mode == __BEGIN_HEADER__ )
-						out.writeln(replace(line, __NAMESPACE__, join("/", project_ns_tokens())));
-					else if ( mode == __BEGIN_NAMESPACE__ )
-						out.writeln(replace(line, __NAMESPACE__, project_ns()));
-					else
-						out.writeln(line);
-				}
-				if ( mode != nullptr )
-					throw syntax_error(fs::format("The template file {0} is not close by proper macro. It is still opened by {1}.", template_file, mode));
-				fs::print("ok\n");
 			}
 			static std::string& replace(std::string & s, std::string const & oldstr, std::string const & newstr)
 			{

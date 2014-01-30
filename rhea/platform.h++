@@ -6,17 +6,30 @@ namespace posix
 {
 	#include <sys/stat.h>
 	#include <dirent.h>
+	#include <string.h>
 }
 
 #include <string>
 #include <vector>
 #include <stdexcept>
 
+#include <tagsql/common/exceptions.h++>
+#include <foam/strlib/format.h>
+#include <foam/strlib/strlib.h>
+
 namespace tagsql
 {
-	bool ensure_dir(std::string const & dir_path)
+	//recursively ensure the directory path
+	void ensure_dir(std::string const & dir_path) 
 	{
-		return  ! ::posix::mkdir(dir_path.c_str(), 0777);
+		auto i = dir_path.rfind('/');
+		if ( i != std::string::npos && i > 0 )
+			ensure_dir(dir_path.substr(0, i));
+		auto ret= ::posix::mkdir(dir_path.c_str(), 0777);
+		if ( !ret )
+			return;
+		if ( errno != EEXIST )
+			throw os_error(::foam::strlib::format("couldn't create directory '{0}'. errno = {1}, errmsg = {2}", dir_path, errno, posix::strerror(errno)));
 	}
 
 	template<typename Predicate>

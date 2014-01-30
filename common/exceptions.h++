@@ -26,6 +26,11 @@ namespace tagsql
 	{
 		using std::runtime_error::runtime_error;
 	};
+
+	struct os_error : public std::runtime_error
+	{
+		using std::runtime_error::runtime_error;
+	};
     
 	class database_error : public std::exception
 	{
