@@ -28,7 +28,7 @@ namespace tagsql
 			
 			void generate()
 			{
-				std::string outdir = _config["outdir"];
+				std::string outdir = _config["srcdir"];
 				if ( outdir.back() != '/' ) 
 					outdir += '/';
 
@@ -56,9 +56,8 @@ namespace tagsql
 				add_writer("tags_impl", outdir + "tags_impl.h++", project_ns_tokens());
 				add_writer("keys", outdir + "keys.h++", project_ns_tokens());
 				add_writer("meta_table", outdir + "meta_table.h++", add_project_ns_tokens("metaspace"));
-				add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
+				//add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
 				add_writer("universal_tags", outdir + "universal_tags.h++", add_project_ns_tokens("universal_tags"));
-				add_writer("tiny_types", outdir + "tiny_types.h++", project_ns_tokens());
 
 				//add #pragma once in all header files and the initial namespace
 				for(auto & item : writers)
@@ -69,21 +68,21 @@ namespace tagsql
 
 				try
 				{
+					generate_keys(stream("keys"));
+					generate_meta_table(stream("meta_table"));
 					generate_schema(stream("table"));
 					generate_tags(stream("tags"));
 					generate_tags_impl(stream("tags_impl"));
-					generate_keys(stream("keys"));
-					generate_meta_table(stream("meta_table"));
-					generate_formatter(stream("formatter"));
 					generate_universal_tags(stream("universal_tags"));
-					generate_tiny_types(stream("tiny_types"));
-					
+					//generate_formatter(stream("formatter"));
+#if 0					
 					auto && template_files = get_templates();
 					for(auto const & template_file : template_files)
 					{
 						auto outfile = template_file.substr(0, template_file.size() - 10) + "h++"; 
 						generate_from_template(outdir + outfile, "templates/" + template_file);
 					}
+#endif					
 				}
 				catch(...)
 				{
@@ -103,11 +102,13 @@ namespace tagsql
 				static auto tokens = split(project_ns(), "::");
 				return tokens;
 			}
+#if 0			
 			auto get_templates() -> std::vector<std::string>
 			{
 				auto filter = [](std::string const & filename) { return ::foam::strlib::endswith(".template++", filename); };
 				return read_directory("templates", filter);
 			}
+#endif			
 			struct project_include_t
 			{
 				std::string data;
@@ -129,17 +130,6 @@ namespace tagsql
 					_project_include.data = join("/", split(project_ns(), "::"));
 				}
 				return _project_include;
-			}
-			
-			void generate_tiny_types(code_writer & out)
-			{
-				out.include("type_traits");
-
-				out.writeln("struct null{}")
-				   .newline()
-				   .writeln("template<typename T>")
-				   .writeln("struct is_null : std::is_same<T,null> {};")
-				   .newline();
 			}
 			void generate_schema(code_writer & out)
 			{
