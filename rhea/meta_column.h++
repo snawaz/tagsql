@@ -4,9 +4,9 @@
 
 #include <string>
 
-namespace tagsql { namespace meta
+namespace tagsql { namespace rhea
 {
-    struct meta_column
+	struct meta_column
 	{
 		std::string                      name;
 		std::string                      type;

@@ -8,10 +8,10 @@
 
 #include <pqxx/pqxx>
 
-#include "meta_column.h++"
-#include "meta_table.h++"
+#include <tagsql/rhea/meta_column.h++>
+#include <tagsql/rhea/meta_table.h++>
 
-namespace tagsql { namespace meta 
+namespace tagsql { namespace rhea 
 {
 	class metadata
 	{

@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <cassert>
 
-#include "string_algo.h++"
+#include <tagsql/common/string_algo.h++>
 
 namespace tagsql
 {

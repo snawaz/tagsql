@@ -11,20 +11,20 @@
 #include <foam/strlib/strlib.h>
 
 #include <tagsql/common/exceptions.h++>
+#include <tagsql/common/string_algo.h++>
 
 #include <tagsql/rhea/platform.h++>
 #include <tagsql/rhea/metadata.h++>
 #include <tagsql/rhea/code_writer.h++>
 #include <tagsql/rhea/config_reader.h++>
-#include <tagsql/rhea/string_algo.h++>
 #include <tagsql/rhea/supported_types.h++>
 
-namespace tagsql 
+namespace tagsql { namespace rhea
 {
 	class code_generator
 	{
 		public:
-			code_generator(tagsql::meta::metadata & meta, meta::config_reader & config, meta::type_mapper & mapper) 
+			code_generator(metadata & meta, config_reader & config, type_mapper & mapper) 
 				: _meta(meta), _config(config), _mapper(mapper) { }
 			
 			void generate()
@@ -169,7 +169,7 @@ namespace tagsql
 				out.include(tagsql_include().append("named_tuple.h++"));
 				out.include(project_include().append("tags.h++"));
 				
-				auto generate_schema_for = [&](meta::meta_table const & table)
+				auto generate_schema_for = [&](meta_table const & table)
 				{
 					static int tag_id = 0;
 					++tag_id;
@@ -219,7 +219,7 @@ namespace tagsql
 			{
 				out.include(project_include().append("tags_impl.h++"));
 				
-				auto generate_tags_for = [&](meta::meta_table const & table)
+				auto generate_tags_for = [&](meta_table const & table)
 				{
 					namespace fs = ::foam::strlib;
 
@@ -316,7 +316,7 @@ namespace tagsql
 					       .newline();
 
 						auto const & mts = _meta.meta_tables();
-						auto const & it = std::find_if(mts.begin(), mts.end(), [&](meta::meta_table const & mt) { return mt.name == p.first; });
+						auto const & it = std::find_if(mts.begin(), mts.end(), [&](meta_table const & mt) { return mt.name == p.first; });
 						if ( it == mts.end() )
 							throw std::logic_error(fs::format("No table found with name '{0}'", p.first));
 						for(auto const & column : it->columns)
@@ -334,7 +334,7 @@ namespace tagsql
 			{
 				out.include(project_include().append("tags_impl.h++"));
 
-				auto generate_keys_for = [&](meta::meta_table const & table)
+				auto generate_keys_for = [&](meta_table const & table)
 				{
 					namespace fs = ::foam::strlib;
 
@@ -355,7 +355,7 @@ namespace tagsql
 					   .newline()
 					   .writeln(fs::format("using foreign_keys = std::tuple<{0}>;", join(",", fkeys)))
 					   .newline()
-					   .writeln(fs::format("using all = std::tuple<{0}>;", join(",", transform(table.columns, [](meta::meta_column const & c) { return c.name + "_t"; }))))
+					   .writeln(fs::format("using all = std::tuple<{0}>;", join(",", transform(table.columns, [](meta_column const & c) { return c.name + "_t"; }))))
 					   .newline()
 					   .writeln("template<typename Tag>")
 					   .writeln(fs::format("std::string qualify(Tag const & tag) {{ return \"{0}.\" + tag.column_name; }}", table.name));
@@ -378,7 +378,7 @@ namespace tagsql
 				for (auto const & table : _meta.meta_tables() ) 
 					out.writeln("struct " + table.name + "_t;");
 				out.close_ns();
-				auto generate_tags_impl_for = [&](meta::meta_table const & table)
+				auto generate_tags_impl_for = [&](meta_table const & table)
 				{
 					namespace fs = ::foam::strlib;
 
@@ -437,7 +437,7 @@ namespace tagsql
 				out.include(project_include().append("keys.h++"));
 				out.include(project_include().append("table.h++"));
 				
-				auto generate_meta_table_for = [&](meta::meta_table const & table)
+				auto generate_meta_table_for = [&](meta_table const & table)
 				{
 					namespace fs = ::foam::strlib;
 
@@ -464,7 +464,7 @@ namespace tagsql
 			}
 			void generate_formatter(code_writer & out)
 			{
-				auto generate_formatter_for = [&](meta::meta_table const & table)
+				auto generate_formatter_for = [&](meta_table const & table)
 				{
 					namespace fs = ::foam::strlib;
 
@@ -508,8 +508,9 @@ namespace tagsql
 				return std::move(replace(s, oldstr, newstr)); //call the other overload, then move the result, because it is temporary!
 			}
 		private:
-			meta::metadata      & _meta;
-			meta::config_reader & _config;
-			meta::type_mapper   & _mapper;
+			metadata      & _meta;
+			config_reader & _config;
+			type_mapper   & _mapper;
 	};
-}
+
+}} // tagsql # rhea

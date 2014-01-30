@@ -6,7 +6,7 @@
 #include <string>
 #include <tagsql/common/exceptions.h++>
 
-namespace tagsql
+namespace tagsql { namespace rhea
 {
 	static const std::map<std::string, std::string> supported_types
 	{
@@ -59,4 +59,4 @@ namespace tagsql
 		}
 		return {it->second, 0};
 	}
-}
+}}

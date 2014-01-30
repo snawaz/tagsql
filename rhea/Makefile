@@ -1,5 +1,5 @@
 
-OUT=run
+OUT=rhea
 
 CC=g++-4.8
 OPTIONS= -std=c++1y -pedantic-errors -Wall -Wconversion
