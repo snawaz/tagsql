@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <tagsql/clauses/select_clause.h++>
 #include <tagsql/clauses/where_clause.h++>
 #include <tagsql/clauses/group_by_clause.h++>
 #include <tagsql/clauses/having_clause.h++>

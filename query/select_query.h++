@@ -3,19 +3,11 @@
 #pragma once
 
 #include <tagsql/core/tiny_types.h++>
+#include <tagsql/core/join_type.h++>
 #include <foam/meta/typelist.h++>
 
 namespace tagsql 
 {
-	namespace join_type
-	{
-		struct cross {};
-		struct inner { static constexpr char const * const token = "JOIN"; };
-		struct left  { static constexpr char const * const token = "LEFT JOIN";  };
-		struct right { static constexpr char const * const token = "RIGHT JOIN"; };
-		struct full  { static constexpr char const * const token = "FULL JOIN"; };
-	}
-
 	template<
 			typename Table, 
 			typename JoinType,

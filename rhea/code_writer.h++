@@ -7,7 +7,7 @@
 #include <array>
 #include <stack>
 #include <string>
-#include <set>
+#include <unordered_set>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -258,7 +258,7 @@ namespace tagsql
 			std::unique_ptr<std::ofstream>        _fs;
 			std::unique_ptr<std::ostringstream>   _ss;
 			int                                   _level = 0;
-			std::set<std::string>                 _headers;
+			std::unordered_set<std::string>       _headers;
 			std::stack<std::vector<std::string>>  _namespaces;
 			bool                                  _accessibility_on;
 			std::size_t                           _column_pos = 0;

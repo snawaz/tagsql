@@ -3,6 +3,7 @@
 #pragma once
 
 #include <tagsql/clauses/join_clause.h++>
+#include <tagsql/core/join_type.h++>
 #include <tagsql/deferred_range.h++>
 #include <tagsql/core/meta_table_base.h++>
 

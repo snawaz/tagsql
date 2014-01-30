@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <tagsql/clauses/common_clauses.h++>
+#include <tagsql/clauses/all.h++>
 
 namespace tagsql
 {

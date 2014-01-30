@@ -3,7 +3,7 @@
 #pragma once
 
 #include <tagsql/core/row_type_helper.h++>
-#include <tagsql/clauses/common_clauses.h++>
+#include <tagsql/clauses/all.h++>
 #include <tagsql/common/exceptions.h++>
 #include <tagsql/core/clause_picker.h++>
 #include <tagsql/common/string_algo.h++>

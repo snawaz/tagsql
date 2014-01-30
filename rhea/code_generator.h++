@@ -105,6 +105,9 @@ namespace tagsql { namespace rhea
 
 					auto & out = stream("__easy_include__");
 					out.include(tagsql_include().append("data_context.h++"));
+					out.include(tagsql_include().append("core/composite_table.h++"));
+					out.include(tagsql_include().append("keywords.h++"));
+					out.include(tagsql_include().append("named_tuple.h++"));
 					out.newline();
 					for(auto const & i : writers)
 					{
