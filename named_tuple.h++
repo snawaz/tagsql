@@ -18,7 +18,7 @@
 
 namespace tagsql
 {
-	const struct construct_from_field_t {} construct_from_field {}; //tag to identify correct overload for pqxx::field variadic arguments!
+	static const struct construct_from_field_t {} construct_from_field {}; //tag to identify correct overload for pqxx::field variadic arguments!
 
 	template<typename ... Tags>
 	class named_tuple : public Tags::template named_member<column<Tags>>...
@@ -46,7 +46,7 @@ namespace tagsql
 				unpack { member<Tags>(std::forward<PQXXFields>(fields)) ... };
 			}
 
-			//truncate or reorder conversion constructor
+			//truncate or re-arrange conversion constructor
 			template<typename ...OtherTags>
 			named_tuple(named_tuple<OtherTags...> const & item)
 			{

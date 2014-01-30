@@ -14,7 +14,7 @@
 #include <foam/meta/seq.h++>
 #include <foam/meta/typelist.h++>
 
-#include <tagsql/rhea/string_algo.h++>
+#include <tagsql/common/string_algo.h++>
 
 
 namespace tagsql { namespace metaspace

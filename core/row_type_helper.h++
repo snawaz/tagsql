@@ -11,6 +11,7 @@
 
 #include <tagsql/core/meta_table_base.h++>
 #include <tagsql/core/meta_column.h++>
+#include <tagsql/core/tiny_types.h++>
 #include <foam/meta/typelist.h++>
 
 
@@ -75,16 +76,16 @@ namespace tagsql { namespace detail
 	template<typename TableList, typename Column>
 	struct resolve_column
 	{
-		template<typename T>
+		template<typename UniversalTag>
 		struct resolver
 		{
-			using tables = typename T::tables::template intersection<TableList>::type;
-			
+			using tables = typename UniversalTag::tables::template intersection<TableList>::type;
+	
 			static_assert(tables::size != 0, "universal tag doesn't resolve to any of the tables.");
-			static_assert(tables::size == 1, "ambiguous column : universal tag resolves to more than one tables.");
-
+			static_assert(!(tables::size > 1), "ambiguous column : universal tag resolves to more than one tables.");
+			
 			using table = typename tables::template at<0>::type;
-			using type = typename T::template get_column<table>::type;
+			using type = typename UniversalTag::template get_column<table>::type;
 		};
 
 		template<typename T>

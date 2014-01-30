@@ -6,7 +6,7 @@
 #include <tagsql/clauses/common_clauses.h++>
 #include <tagsql/common/exceptions.h++>
 #include <tagsql/core/clause_picker.h++>
-#include <tagsql/rhea/string_algo.h++>
+#include <tagsql/common/string_algo.h++>
 
 #include <vector>
 #include <memory>
