@@ -7,9 +7,11 @@
 #pragma once
 
 #include <tagsql/query/select_query.h++>
+#include <tagsql/query/insert_query.h++>
 #include <tagsql/core/formatter.h++>
 #include <tagsql/core/update_expression.h++>
 #include <tagsql/clauses/all.h++>
+#include <tagsql/anatomy/table.h++>
 
 
 namespace tagsql 
@@ -64,11 +66,18 @@ namespace tagsql
 				return {_connection };
 			}
     
-			//insert
+			//insert (DB syntax)
+			template<typename Table>
+			auto insert_into(Table const &) -> insert_query<data_context, table_tag_t<Table>>
+			{
+				return {*this};
+			}
+			//insert (C++ container syntax)
 			template<typename Table>
 			auto insert(Table const & item) -> std::string
 			{
-				return "NotImplemented"; //execute(query::for_insert(item));
+				//return query::for_insert(item);
+				return execute(query::for_insert(item));
 			}
     
 			//update
@@ -79,6 +88,10 @@ namespace tagsql
 			}
 		
 		private:
+			
+			template<typename DataContext, typename Table, typename ... ColumnTags>
+			friend struct insert_values;
+
 			std::string execute(std::string query)
 			{
 				pqxx::work transaction { *_connection } ;

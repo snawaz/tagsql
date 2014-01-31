@@ -27,4 +27,7 @@ namespace tagsql
 		using type = decltype(tag_type<Column>(0));
 	};
 
+	template<typename Column>
+	using column_tag_t = typename get_tag<Column>::type;
+
 } //tagsql

@@ -6,7 +6,7 @@
 #include <string>
 #include <tagsql/support/supported_types.h++>
 #include <tagsql/core/meta_column.h++>
-
+#include <foam/strlib/format.h>
 
 namespace snawaz { namespace db { namespace fest
 {
@@ -41,6 +41,12 @@ namespace snawaz { namespace db { namespace fest
 			};
 
 			author_id_t() : base("author_id"){}
+
+			//TO-DO
+			//It is not going to work as of now, because this currently doesn't support && and || operators.
+			//Besides, we also need to make it work with mixed tags, as the other tags could of any time.
+			//The bottomline is : we need to come up with unified type-system for all kinds of tags that enables freedom of expression (i.e allow different kinds of tags to mix).
+			std::string operator==(long int const & value ) const { return ::foam::strlib::format("author.author_id = {0}", value); }
 
 			static char const* type_name() { return "long int"; }
 		};

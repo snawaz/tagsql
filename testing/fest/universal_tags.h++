@@ -97,7 +97,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	} //detail
 
-	static const struct age_t
+	static const struct age_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -110,7 +110,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}age{};
 
-	static const struct author_t
+	static const struct author_u
 	{
 		using _is_column = std::false_type;
 		using _is_table  = std::true_type;
@@ -126,7 +126,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}author{};
 
-	static const struct author_id_t
+	static const struct author_id_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -139,7 +139,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}author_id{};
 
-	static const struct book_t
+	static const struct book_u
 	{
 		using _is_column = std::false_type;
 		using _is_table  = std::true_type;
@@ -155,7 +155,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}book{};
 
-	static const struct book_id_t
+	static const struct book_id_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -168,7 +168,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}book_id{};
 
-	static const struct comment_t
+	static const struct comment_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -181,7 +181,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}comment{};
 
-	static const struct created_t
+	static const struct created_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -194,7 +194,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}created{};
 
-	static const struct modified_t
+	static const struct modified_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -207,7 +207,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}modified{};
 
-	static const struct name_t
+	static const struct name_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -220,7 +220,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}name{};
 
-	static const struct review_t
+	static const struct review_u
 	{
 		using _is_column = std::false_type;
 		using _is_table  = std::true_type;
@@ -235,7 +235,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}review{};
 
-	static const struct review_id_t
+	static const struct review_id_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -248,7 +248,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}review_id{};
 
-	static const struct reviewer_id_t
+	static const struct reviewer_id_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -261,7 +261,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}reviewer_id{};
 
-	static const struct title_t
+	static const struct title_u
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;

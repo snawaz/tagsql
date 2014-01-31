@@ -31,13 +31,6 @@ namespace tagsql
 				//todo: static checks!
 				return { static_cast<column<Tag> const&>(*this), other }; 
 			}
-
-			template<typename OtherTag> //, typename X = typename OtherTag::column_type>
-			auto operator==(OtherTag const & other) const -> binary_expression<column_expression<Tag>, column_expression<OtherTag>, equal_t<Tag>>
-			{
-				//todo: static checks!
-				return { static_cast<column<Tag> const&>(*this), column<OtherTag>{} }; 
-			}
 		};
 	}
 

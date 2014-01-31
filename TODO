@@ -19,8 +19,8 @@ Syntax
 	auto items = query.use(persons,authors); //reuse on local source
 
 
-Features
-========
+Objectives
+=========
 
 	- Type-safety.
 	- Constraint checks (throughout).
@@ -76,8 +76,18 @@ TODO LIST
 			- implicit conv   : T v = column;         - DONE
 
 	- design and implementations:
-		- implement table in terms of named_tuple   - DONE
-		
+		- implement table in terms of named_tuple      - DONE
+		- to ease implementation, introduce tag 
+		  kinds, pretty much like iterator_category.   
+		  e.g  
+		  	   using tag_category = column_tag;         
+		  	   using tag_category = meta_tag;         
+		  	   using tag_category = universal_tag;         
+
+		  Likewise, for tables also.                   - 
+		     
+	- transaction
+		- strategy {(begin, commit) vs (begin, rollback)}   - 
 		
 
 CHECK LIST

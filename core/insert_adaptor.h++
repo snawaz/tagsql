@@ -23,7 +23,7 @@ namespace tagsql { namespace formatting
 		template<typename Value>
 		std::string decorate(Value && value, std::false_type)
 		{
-			return "'" + foam::strlib::format("{0}", std::forward<Value>(value)) + "'";
+			return foam::strlib::format("'{0}'", std::forward<Value>(value));
 		}
 	}
     
@@ -32,9 +32,9 @@ namespace tagsql { namespace formatting
 	{
 		return detail::decorate(value, typename std::is_arithmetic<typename std::remove_reference<Value>::type>::type());
 	}
-    
-	template<typename T, typename Adaptor>
-	class formatter;
+   
+	template<typename NamedTuple, typename Adaptor>
+	class formatter;	
     
 	class sql_insert_adaptor
 	{
@@ -44,8 +44,6 @@ namespace tagsql { namespace formatting
 			template<typename Column>
 			void write(Column const & value, value_type & output)
 			{
-//				using tagsql::metaspace::meta_table;
-    
 				if ( value.is_null() )
 				{ 
 					if ( value.is_nullable )

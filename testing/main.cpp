@@ -44,7 +44,8 @@ void test_universal_tags(tagsql::data_context & dc)
 	std::cout << dc.select(created).from(author) << std::endl;
 
 	std::cout << dc.select(book.title).from(book) << std::endl;
-	std::cout << dc.select(book.title, author.name).from(book).join(author).on(author.author_id == 10) << std::endl;
+	//std::cout << (author.author_id == 10) << std::endl;
+	//std::cout << dc.select(book.title, author.name).from(book).join(author).on(author.author_id == 10) << std::endl;
 }
 
 #if 0
@@ -104,15 +105,6 @@ void test_select(tagsql::data_context & dc)
 	std::cout << dc.select().from(review).where(review.reviewer_id == 2).order_by(-review.review_id, +review.book_id) << std::endl; 
 
 }
-
-void test_insert(tagsql::data_context & dc)
-{
-	using namespace snawaz::db::fest::schema;
-	author_t a {};
-	a.name = "Saurabh";
-	a.age = 20;
-	dc.insert(a);
-}
 void test_join(tagsql::data_context & dc)
 {
 	using namespace snawaz::db::fest::schema;
@@ -135,19 +127,61 @@ void test_join(tagsql::data_context & dc)
 #endif
 
 }
+#endif
+
+template<typename Iterator>
+void insert_all(Iterator begin, Iterator end)
+{
+	while ( begin != end )
+	{
+		dc.insert(*begin);
+		++begin;
+	}
+}
+template<typename Container>
+void insert_all(Container && c)
+{
+	using std::begin;
+	using std::end;
+	insert_all(begin(c), end(c));
+}
+
+void test_insert(tagsql::data_context & dc)
+{
+	using namespace snawaz::db::fest::schema;
+	author_t a {};
+	a.name = "Saurabh Khan";
+	a.age = 20000;
+	//std::cout << dc.insert(a) << std::endl;
+
+	//tagsql::transaction xtras(dc);
+
+	//db syntax, more rows at once
+	//dc.insert_into(author)(_author.name, _author.age).values("C++", 11).values("C#", 12).values("Java", 13); //.commit();
+
+	//db syntax
+	//dc.insert_into(book).columns(_book.title, _book.author_id).values("C++", 10).commit();             
+
+#if NOT_DONE_YET	
+	//improved syntax (inspired from UPDATE command)
+	dc.insert_into(author).set(_author.name = "C++", _author.age = 10);            
+	//dc.insert_into(author).set(_author.name = "C++", _author.age = 10).set(...).set( ... so on ... );            
 #endif 
+
+	//xtrans.commit(); OR xtrans.rollback(); or whatever makes sense
+}
 
 int main()
 {
     try
     {
 		tagsql::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
-		test_universal_tags(dc);
+		//test_universal_tags(dc);
 #if 0		
 		test_select(dc);
-		test_insert(dc);
 		test_join(dc);
 #endif		
+		test_insert(dc);
     }
     catch(std::exception const & e)
     {
