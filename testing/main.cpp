@@ -2,20 +2,21 @@
 
 #include <iostream>
 
-#include <testing/testdb.h++>
+#include <testing/fest/fest.h++>
 
-const testing::schema::author_t author{};
-const testing::schema::book_t book{};
-const testing::schema::review_t review{};
+const snawaz::db::fest::schema::author_t _author{};
+const snawaz::db::fest::schema::book_t   _book{};
+const snawaz::db::fest::schema::review_t _review{};
 
-using namespace testing;
-//using namespace tagsql;
+using namespace snawaz::db::fest;
+using namespace snawaz::db::fest::universal_tags;
 
 template<typename NamedTuple>
 void fff(NamedTuple item)
 {
 	std::cout << item << std::endl;
 }
+
 void f(tagsql::named_tuple<author_tag::name_t, author_tag::age_t> item)
 {
 	std::cout << "f() => " << item.name << "," << item.age << std::endl;
@@ -28,7 +29,6 @@ void h(tagsql::named_tuple<author_tag::age_t, author_tag::name_t> item)
 	std::cout << "h() => " << item << std::endl;
 }
 
-
 //void g(named_tuple<author_tag::name_t, author_tag::created_t> item)
 void g(tagsql::named_tuple<author_tag::name_t> item)
 {
@@ -38,22 +38,23 @@ void g(tagsql::named_tuple<author_tag::name_t> item)
 
 void test_universal_tags(tagsql::data_context & dc)
 {
-	namespace t=testing::universal_tags;
+	//namespace t=snawaz::db::fest::universal_tags;
 
-	std::cout << dc.select(t::created).from(book) << std::endl;
-	std::cout << dc.select(t::created).from(author) << std::endl;
+	std::cout << dc.select(created, book.title).from(book) << std::endl;
+	std::cout << dc.select(created).from(author) << std::endl;
 
 	std::cout << dc.select(book.title).from(book) << std::endl;
-
+	std::cout << dc.select(book.title, author.name).from(book).join(author).on(author.author_id == 10) << std::endl;
 }
-#if 1
+
+#if 0
 void test_select(tagsql::data_context & dc)
 {
 	using namespace tagsql;
-	using namespace testing::schema;
-	namespace at = testing::author_tag;
-	namespace bt = testing::book_tag;
-	namespace rt = testing::review_tag;
+	using namespace snawaz::db::fest::schema;
+	namespace at = snawaz::db::fest::author_tag;
+	namespace bt = snawaz::db::fest::book_tag;
+	namespace rt = snawaz::db::fest::review_tag;
 
 	for(auto const & item : dc.select().from(author))
 	{
@@ -106,7 +107,7 @@ void test_select(tagsql::data_context & dc)
 
 void test_insert(tagsql::data_context & dc)
 {
-	using namespace testing::schema;
+	using namespace snawaz::db::fest::schema;
 	author_t a {};
 	a.name = "Saurabh";
 	a.age = 20;
@@ -114,10 +115,10 @@ void test_insert(tagsql::data_context & dc)
 }
 void test_join(tagsql::data_context & dc)
 {
-	using namespace testing::schema;
-	namespace at = testing::author_tag;
-	namespace bt = testing::book_tag;
-	namespace rt = testing::review_tag;
+	using namespace snawaz::db::fest::schema;
+	namespace at = snawaz::db::fest::author_tag;
+	namespace bt = snawaz::db::fest::book_tag;
+	namespace rt = snawaz::db::fest::review_tag;
 
 #if 0
 	auto items = dc.select(at::name, bt::title)
@@ -142,7 +143,7 @@ int main()
     {
 		tagsql::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
 		test_universal_tags(dc);
-#if 1		
+#if 0		
 		test_select(dc);
 		test_insert(dc);
 		test_join(dc);

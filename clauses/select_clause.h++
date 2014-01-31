@@ -2,8 +2,9 @@
 #pragma once
 
 #include <memory>
-
 #include <pqxx/pqxx>
+
+#include <tagsql/anatomy/table.h++>
 
 namespace tagsql
 {
@@ -17,9 +18,9 @@ namespace tagsql
 			select_clause(std::shared_ptr<pqxx::connection> & connection) : _connection(connection) {}
    
 			template<typename Table>
-			auto from(Table) -> composite_table<typename SelectQuery::template add_from<Table>::type>
+			auto from(Table) -> composite_table<typename SelectQuery::template add_from<table_tag_t<Table>>::type>
 			{
-				return { _connection, "FROM " + metaspace::meta_table<Table>::name() };
+				return { _connection, "FROM " + metaspace::meta_table<table_tag_t<Table>>::name() };
 			}
 		
 		private:

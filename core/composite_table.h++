@@ -6,6 +6,7 @@
 #include <tagsql/core/join_type.h++>
 #include <tagsql/deferred_range.h++>
 #include <tagsql/core/meta_table_base.h++>
+#include <tagsql/anatomy/table.h++>
 
 #include <string>
 #include <pqxx/pqxx>
@@ -24,31 +25,31 @@ namespace tagsql
 			}
 
 			template<typename OtherTable>
-			auto cross_join(OtherTable) -> composite_table<typename SelectQuery::template add_join<OtherTable, join_type::cross>::type>
+			auto cross_join(OtherTable) -> composite_table<typename SelectQuery::template add_join<table_tag_t<OtherTable>, join_type::cross>::type>
 			{
-				return {this->_connection, this->_query_without_select + " CROSS JOIN " + metaspace::meta_table<OtherTable>::name() };
+				return {this->_connection, this->_query_without_select + " CROSS JOIN " + metaspace::meta_table<table_tag_t<OtherTable>>::name() };
 			}
 
 			template<typename OtherTable>
-			auto join(OtherTable) -> join_clause<typename SelectQuery::template add_join<OtherTable, join_type::inner>::type>
+			auto join(OtherTable) -> join_clause<typename SelectQuery::template add_join<table_tag_t<OtherTable>, join_type::inner>::type>
 			{
 				return { this->_connection, this->_query_without_select };
 			}
 			
 			template<typename OtherTable>
-			auto left_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<OtherTable, join_type::left>::type>
+			auto left_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<table_tag_t<OtherTable>, join_type::left>::type>
 			{
 				return { this->_connection, this->_query_without_select };
 			}
             
 			template<typename OtherTable>
-			auto right_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<OtherTable, join_type::right>::type>
+			auto right_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<table_tag_t<OtherTable>, join_type::right>::type>
 			{
 				return { this->_connection, this->_query_without_select };
 			}
 	
 			template<typename OtherTable>
-			auto full_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<OtherTable, join_type::full>::type>
+			auto full_join(OtherTable) -> join_clause<typename SelectQuery::template add_join<table_tag_t<OtherTable>, join_type::full>::type>
 			{
 				return { this->_connection, this->_query_without_select };
 			}
