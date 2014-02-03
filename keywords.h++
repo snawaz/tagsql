@@ -6,7 +6,7 @@ namespace tagsql
 {
 	namespace sql
 	{
-		const struct all_t{} all{};
+		const struct all_t {} all {};
 
 		const struct order_by_direction_t { char const *token; } asc {"ASC"}, desc {"DESC"};
 	}

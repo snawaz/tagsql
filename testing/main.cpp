@@ -143,12 +143,25 @@ void test_insert(tagsql::data_context & dc)
 	//db syntax, more rows at once
 	//dc.insert_into(author)(_author.name, _author.age).values("C++", 11).values("C#", 12).values("Java", 13); //.commit();
 
+#if 0
+	author_t author;
+	auto items = dc.select(author.name, author.age).from(author);
+	for(auto const & item  : items)
+	{
+		std::cout << "DEMO : " << item.name << ", " << item.age << std::endl;
+	}
+#endif
 
-	//using types = ::foam::meta::typelist<author_t, review_t>; 
-	using types = ::foam::meta::typelist<book_t, review_t>; 
+	using types = ::foam::meta::typelist<author_t, review_t>; 
+	//using types = ::foam::meta::typelist<book_t, review_t>; 
 	//using types = ::foam::meta::typelist<author_t, book_t, review_t>; 
-	auto e1 = author == author; //std::string("Sarfaraz Nawaz");
+	auto e1 = age == age; //std::string("Sarfaraz Nawaz");
+	auto e2 = author == author; //std::string("Sarfaraz Nawaz");
+	auto e3 = age == author; //std::string("Sarfaraz Nawaz");
 	std::cout << e1.repr(types()) << std::endl;
+	std::cout << e2.repr(types()) << std::endl;
+	std::cout << e3.repr(types()) << std::endl;
+
 	//db syntax
 	//dc.insert_into(book).columns(_book.title, _book.author_id).values("C++", 10).commit();             
 

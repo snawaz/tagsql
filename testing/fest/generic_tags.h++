@@ -112,7 +112,24 @@ namespace snawaz { namespace db { namespace fest { namespace generic_tags
 
 	} //detail
 
-	static struct age_g
+	template<typename GenericTag>
+	struct _generic_tag_base_t
+	{
+		template<typename TableList>
+		std::string repr(TableList) const 
+		{
+			using table = typename ::tagsql::resolve_table<TableList, GenericTag>::type;
+			return qualify(typename GenericTag::template get_column<table>::type()); 
+		}
+
+		template<typename Other> //Other could be tag or literal value
+		auto operator==(Other const & value) const -> ::tagsql::generic_binary_expression<GenericTag, ::tagsql::generic_expression<Other>, tagsql::generic_equal_t>
+		{
+			return {static_cast<GenericTag const&>(*this), value};
+		}
+	};
+
+	static struct age_g : _generic_tag_base_t<age_g>
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
@@ -124,6 +141,7 @@ namespace snawaz { namespace db { namespace fest { namespace generic_tags
 		template<typename Table>
 		struct get_column : detail::get_age<Table>{};
 
+#if 0		
 		template<typename TableList>
 		std::string repr(TableList) const 
 		{
@@ -136,10 +154,11 @@ namespace snawaz { namespace db { namespace fest { namespace generic_tags
 		{
 			return {*this, value};
 		}
+#endif
 
 	}age{};
 
-	static struct author_g
+	static struct author_g : _generic_tag_base_t<author_g>
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::true_type;
@@ -150,7 +169,7 @@ namespace snawaz { namespace db { namespace fest { namespace generic_tags
 
 		template<typename Table>
 		struct get_column : detail::get_author<Table>{};
-
+#if 0
 		template<typename TableList>
 		std::string repr(TableList) const 
 		{
@@ -163,7 +182,7 @@ namespace snawaz { namespace db { namespace fest { namespace generic_tags
 		{
 			return {*this, value};
 		}
-
+#endif
 		using table = schema::author_t;
 
 		author_tag::author_id_t                       author_id;               

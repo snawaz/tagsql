@@ -20,7 +20,7 @@ Syntax
 
 
 Objectives
-=========
+==========
 
 	- Type-safety.
 	- Constraint checks (throughout).
@@ -29,7 +29,6 @@ Objectives
 	- Different types of data sources: DB collections as well as in-memory collections.
 	- Query reuse.
 
-
 Example Sample Query
 ====================
 
@@ -37,7 +36,6 @@ select U.business_site_name, U.category_hierarchy_string, C.category_name
 from( (select business_site_name, category_hierarchy_id from business_site as A, category_map as B where A.business_site_id = B.business_site_id) as S 
 	   inner join category_hierarchy as T on S.category_hierarchy_id = T.category_hierarchy_id) as U
 inner join category as C on C.category_id = U.level1_category_id
-
 
 TODO LIST
 =========
@@ -126,7 +124,6 @@ CHECK LIST
 		                            pt::age_t, 
 									pt::qualification_t>{};
 
-
 IMPLEMENTATION REQUIREMENTS and ANALYSIS
 ========================================
 
@@ -137,9 +134,37 @@ IMPLEMENTATION REQUIREMENTS and ANALYSIS
 			- so value of any expression involving column tags depends on the kind of tags.
 				- except column, other two tags shouldn't produce any value. 
 				- all three tags should be able to produce DB expression in a context which requires it.
-		-  so define a nested type 'tag_category':
-		  	   using tag_category = context_dependent_tag;         
-		  	   using tag_category = context_independent_tag;         
-		  	   using tag_category = context_independent_value_tag;         
+		- so define a nested type 'tag_category':
+			using tag_category = context_dependent_tag;           //CDT  
+			using tag_category = context_independent_tag;         //CIT
+			using tag_category = context_independent_value_tag;   //CIVT
+
+		- interface for all tags
+			interface   __tagname__
+			{
+				using tag_category = implementation-defined; 
+				std::string column_name(bool qualify);  //qualify has no effect on generic_tag, as it will return column_name without qualification.
+			};
+
+		- expressions : all expressions can produce SQL repr; few can produce values too.
+			- simple expressions
+				- CDT   op  CDT           -
+				- CDT   op  LITERAL       -
+				- CIT   op  CIT           -
+				- CIT   op  LITERAL       -
+				! CIVT  op  CIVT          -
+				! CIVT  op  LITERAL       -
+
+				Out of all forms, only the last two (starting with !) can produce VALUE. 
+
+			- mixed expressions
+				- CDT   op  CIT           -
+				- CDT   op  CIVT          -
+				- CIT   op  CDT           -
+				- CIT   op  CIVT          -
+				- CIVT  op  CDT           -
+				- CIVT  op  CIT           -
+
+				None of the mixed expression can produce VALUE!
 	- Tables
 

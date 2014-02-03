@@ -55,14 +55,11 @@ namespace tagsql
 			column(value_type value) : _data(std::move(value)) 
 			{ 
 			}
-    
 			template<typename U, typename Unused=typename std::enable_if<!bare::is_same<U,pqxx::field>::value>::type >
 			column(U && value) 
 			{
-				static_assert(std::is_constructible<value_type, bare::type<U>>::value, "column::value_type cannot be constructed from the argument");
 				set(std::forward<U>(value));
 			}
-    
 			column(pqxx::field const & field) 
 			{ 
 				try
@@ -76,7 +73,6 @@ namespace tagsql
 								field.c_str(), column_name(true), Tag::type_name(), e.what() ));
 				}
 			}
-
 #if 0			
 			//it is not copy-assignment!
 			column& operator = (value_type const & value)
@@ -192,6 +188,7 @@ namespace tagsql
 			template<typename U>
 			void set_internal(U && value, ... )
 			{
+				static_assert(std::is_constructible<::foam::optional<value_type>, bare::type<U>>::value, "column::value_type cannot be constructed from the argument");
 				_data = std::forward<U>(value);
 				_null_has_been_set =  (_data == ::foam::none);
 			}
