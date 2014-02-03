@@ -11,6 +11,8 @@
 #include <foam/optional.h>
 
 #include <tagsql/common/exceptions.h++>
+#include <tagsql/core/tag_category.h++>
+#include <tagsql/core/deferred_assignment.h++>
 
 #include <pqxx/pqxx>
 
@@ -38,18 +40,21 @@ namespace tagsql
 	class column : public Tag::sql_data_type::template operators<Tag>
 	{
 		public:
-			using tag_type   = Tag;
-			using table_type = typename Tag::table_type;
-			using value_type = typename Tag::column_type;
-		
-			using _is_column = std::true_type;
+			using self_type     = column<Tag>;
+			using table_type    = typename Tag::table_type;
+			using value_type    = typename Tag::column_type;
+			using tag_type      = Tag;
+			using tag_category  = core::context_independent_value_tag;
+			using _is_column    = std::true_type;
   
 			static constexpr bool is_nullable    = tag_type::is_nullable; 
 			static constexpr bool server_default = tag_type::server_default; 
 			
 			column() {}
 			
-			column(value_type value) : _data(std::move(value)) {}
+			column(value_type value) : _data(std::move(value)) 
+			{ 
+			}
     
 			template<typename U, typename Unused=typename std::enable_if<!bare::is_same<U,pqxx::field>::value>::type >
 			column(U && value) 
@@ -71,7 +76,8 @@ namespace tagsql
 								field.c_str(), column_name(true), Tag::type_name(), e.what() ));
 				}
 			}
-    
+
+#if 0			
 			//it is not copy-assignment!
 			column& operator = (value_type const & value)
 			{
@@ -91,7 +97,27 @@ namespace tagsql
 			{
 				return set(::foam::none);
 			}
-   
+#else
+			//it is not copy-assignment!
+			auto operator = (value_type const & value) -> core::deferred_assignment<self_type, value_type>
+			{
+				return core::deferred_assignment<self_type, value_type>(this, value);
+			}
+    
+			//it is not copy-assignment either!
+			template<typename U>
+			auto operator = (U && value) -> core::deferred_assignment<self_type, U>
+			{
+				static_assert(std::is_constructible<value_type, U>::value, "column::value_type cannot be constructed from the argument");
+				return core::deferred_assignment<self_type, U>(this, std::forward<U>(value));
+			}
+    
+			//it is not copy-assignment!
+			auto operator = (std::nullptr_t) -> core::deferred_assignment<self_type, ::foam::none_t>
+			{
+				return core::deferred_assignment<self_type, ::foam::none_t>(this, ::foam::none);
+			}
+#endif			
 			//value access using method => T v = item.value;
 			value_type const & value() const { return *_data; }
 			value_type & value()  { return *_data; }
@@ -130,7 +156,10 @@ namespace tagsql
 		private:
 			template<typename ...Tags>
 			friend class named_tuple;
-            
+           
+			template<typename Column, typename ValueType>
+			friend class core::deferred_assignment;
+
 			template<typename U>
 			column& set(U && value)
 			{

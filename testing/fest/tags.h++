@@ -17,6 +17,7 @@ namespace snawaz { namespace db { namespace fest
 		static const age_t                            age;                     //short	-	-	-
 		static const modified_t                       modified;                //std::string	-	-	-
 		static const created_t                        created;                 //std::string	-	-	-
+		static const author_t                         author;                  //std::string	-	-	-
 
 	} //author_tag
 
@@ -27,6 +28,7 @@ namespace snawaz { namespace db { namespace fest
 		static const author_id_t                      author_id;               //long int	-	foreign_key	-
 		static const modified_t                       modified;                //std::string	-	-	-
 		static const created_t                        created;                 //std::string	-	-	-
+		static const author_t                         author;                  //std::string	-	-	-
 
 	} //book_tag
 

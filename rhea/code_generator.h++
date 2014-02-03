@@ -82,7 +82,7 @@ namespace tagsql { namespace rhea
 				add_writer("tags_impl", outdir + "tags_impl.h++", project_ns_tokens());
 				add_writer("keys", outdir + "keys.h++", project_ns_tokens());
 				add_writer("meta_table", outdir + "meta_table.h++", add_tagsql_ns_tokens("metaspace"));
-				add_writer("universal_tags", outdir + "universal_tags.h++", add_project_ns_tokens("universal_tags"));
+				add_writer("generic_tags", outdir + "generic_tags.h++", add_project_ns_tokens("generic_tags"));
 				add_writer("__easy_include__", outdir + _config["dbspace"] + ".h++", {});
 				//add_writer("formatter", outdir + "formatter.h++", add_project_ns_tokens("formatting"));
 
@@ -100,7 +100,7 @@ namespace tagsql { namespace rhea
 					generate_schema(stream("table"));
 					generate_tags(stream("tags"));
 					generate_tags_impl(stream("tags_impl"));
-					generate_universal_tags(stream("universal_tags"));
+					generate_generic_tags(stream("generic_tags"));
 					//generate_formatter(stream("formatter"));
 
 					auto & out = stream("__easy_include__");
@@ -207,7 +207,8 @@ namespace tagsql { namespace rhea
 					}
 					out.writeln(fs::format("\n{0}>;", spaces.substr(0, spaces.size()-2)))
 					   .begin_class(fs::format("{0}_t : public _{0}_base_t", table.name), true)
-					   .writeln(fs::format("using  _{0}_base_t::_{0}_base_t;", table.name))
+					   .writeln(fs::format("using table = {0}_t;", table.name))
+					   .writeln(fs::format("using _{0}_base_t::_{0}_base_t;", table.name))
 					   .end_class();
 				};
 
@@ -255,11 +256,12 @@ namespace tagsql { namespace rhea
 				bool                     is_column;
 				bool                     is_table;
 			};
-			void generate_universal_tags(code_writer & out)
+			void generate_generic_tags(code_writer & out)
 			{
 				out.include(project_include().append("table.h++"));
 				out.include(project_include().append("tags_impl.h++"));
 				out.include(tagsql_include().append("core/tiny_types.h++"));
+				out.include(tagsql_include().append("core/tag_category.h++"));
 				
 				namespace fs = ::foam::strlib;
 
@@ -300,14 +302,17 @@ namespace tagsql { namespace rhea
 				{
 					auto const & tag_info = p.second;
 					out.newline()
-					   .begin_class(p.first + "_t", true, "static const")
+					   .begin_class(p.first + "_g", true, "static")
 					   .writeln(fs::format("using _is_column = std::{0}_type;", tag_info.is_column ? "true" : "false"))
 					   .writeln(fs::format("using _is_table  = std::{0}_type;", tag_info.is_table ? "true" : "false"))
 					   .writeln(fs::format("using _is_unique = {0};", tag_info.is_table ? "::tagsql::null" : (tag_info.tables.size() == 1? "std::true_type" : "std::false_type")))
 					   .newline();
+
 					if ( tag_info.is_column )
 					{
-						out.writeln(fs::format("using tables = ::foam::meta::typelist<{0}>;", join(",", transform(tag_info.tables, [](std::string s) { return "schema::" + s + "_t"; }))))
+						auto tables = join(",", transform(tag_info.tables, [](std::string s) { return "schema::" + s + "_t"; }));
+					   	out.writeln("using tag_category  = ::tagsql::core::context_dependent_tag;")
+						   .writeln(fs::format("using tables = ::foam::meta::typelist<{0}>;", std::move(tables)))
 					   	   .newline()
 					       .writeln("template<typename Table>")
 					       .writeln(fs::format("struct get_column : detail::get_{0}<Table>{{}};", p.first))
@@ -375,6 +380,7 @@ namespace tagsql { namespace rhea
 			void generate_tags_impl(code_writer & out)
 			{
 				out.include(tagsql_include().append("core/meta_column.h++"));
+				out.include(tagsql_include().append("core/tag_category.h++"));
 				out.include(tagsql_include().append("support/supported_types.h++"));
 
 				out.open_ns("schema");
@@ -410,6 +416,7 @@ namespace tagsql { namespace rhea
 							.begin_class(fs::format("{0}_t : {1}", c.name, base), true)
 							.writeln(fs::format("using base = {0};", base))
 							.writeln(fs::format("using sql_data_type = {0};", sql_data_type))
+					   		.writeln("using tag_category  = ::tagsql::core::context_independent_tag;")
 							.newline()
 							.writeln("template<typename T>")
 							.begin_class("named_member", true)

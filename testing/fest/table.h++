@@ -17,12 +17,13 @@ namespace snawaz { namespace db { namespace fest { namespace schema
 	                                              txzi1::name_t,            //std::string         	-           	-           	-             
 	                                              txzi1::age_t,             //short               	-           	-           	-             
 	                                              txzi1::modified_t,        //std::string         	-           	-           	-             
-	                                              txzi1::created_t          //std::string         	-           	-           	-             	
+	                                              txzi1::created_t,         //std::string         	-           	-           	-             
+	                                              txzi1::author_t           //std::string         	-           	-           	-             	
 	                                            >;
 	struct author_t : public _author_base_t
 	{
 		using table = author_t;
-		using  _author_base_t::_author_base_t;
+		using _author_base_t::_author_base_t;
 	};
 
 	//This definition of schema for table 'book'.
@@ -32,12 +33,13 @@ namespace snawaz { namespace db { namespace fest { namespace schema
 	                                            txzi2::title_t,           //std::string         	-           	-           	-             
 	                                            txzi2::author_id_t,       //long int            	-           	foreign_key 	-             
 	                                            txzi2::modified_t,        //std::string         	-           	-           	-             
-	                                            txzi2::created_t          //std::string         	-           	-           	-             	
+	                                            txzi2::created_t,         //std::string         	-           	-           	-             
+	                                            txzi2::author_t           //std::string         	-           	-           	-             	
 	                                          >;
 	struct book_t : public _book_base_t
 	{
 		using table = book_t;
-		using  _book_base_t::_book_base_t;
+		using _book_base_t::_book_base_t;
 	};
 
 	//This definition of schema for table 'review'.
@@ -51,7 +53,7 @@ namespace snawaz { namespace db { namespace fest { namespace schema
 	struct review_t : public _review_base_t
 	{
 		using table = review_t;
-		using  _review_base_t::_review_base_t;
+		using _review_base_t::_review_base_t;
 	};
 
 }}}} //snawaz # db # fest # schema

@@ -5,7 +5,7 @@
 #include <vector>
 #include <tuple>
 
-#include <tagsql/named_tuple.h++>
+#include <tagsql/core/tiny_types.h++>
 #include <tagsql/named_tuple.h++>
 #include <tagsql/anatomy/column.h++>
 #include <tagsql/common/string_algo.h++>
@@ -53,6 +53,10 @@ namespace tagsql
 	{
 	public:
 		insert_query(DataContext & dc) : _dc(dc) {}
+		~insert_query()
+		{
+			commit();
+		}
 
 		template<typename ... Columns>
 		auto columns(Columns ... ) -> insert_values<DataContext, Table, column_tag_t<Columns>...>
@@ -64,8 +68,28 @@ namespace tagsql
 		{
 			return { _dc };
 		}
+		template<typename ... NamedArgs>
+		auto set(NamedArgs ... args) -> insert_query<DataContext, Table> &
+		{
+			static std::string cols[] { std::move(NamedArgs::column_type::column_name(false)) ... };
+			static auto joined_cols = join(",", cols);
+			std::string vals[] { formatting::decorate(std::move(args._value)) ... };
+			_insert_commands.push_back(::foam::strlib::format("INSERT INTO {0} ({1}) VALUES ({2});",metaspace::meta_table<Table>::name(),joined_cols, join(",", vals)));
+			unpack { (args._commit = false) ... };
+			return *this;
+		}
+		void commit()
+		{
+			if ( ! _insert_commands.empty() )
+			{
+				auto scoped_commands = std::move(_insert_commands);
+				for(auto const & command : scoped_commands )
+					_dc.execute(command);
+			}
+		}
 	private:
 		DataContext _dc;
+		std::vector<std::string> _insert_commands;
 	};
 
 }

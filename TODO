@@ -24,7 +24,7 @@ Objectives
 
 	- Type-safety.
 	- Constraint checks (throughout).
-	- Easy access.
+	- Easy programming. Intuitive syntax and semantic.
 	- Deferred execution.
 	- Different types of data sources: DB collections as well as in-memory collections.
 	- Query reuse.
@@ -42,7 +42,7 @@ inner join category as C on C.category_id = U.level1_category_id
 TODO LIST
 =========
 
-	- clause
+	- clauses (SELECT command)
 		- select                                     - DONE
 		- from                                       - DONE
 		- join {inner, left, right, full, cross}     - DONE 
@@ -54,6 +54,14 @@ TODO LIST
 		- limit { count | ALL }                      - DONE
 		- offset                                     - DONE
 		- fetch                                      - DONE
+
+	- clauses (INSERT command)
+		- insert into           - DONE
+
+	- clauses (UPDATE command)
+		- update                - DONE
+		- set                   - DONE
+		- where                 - DONE
 	
 	- sub-query
 		- from(sub-query)            - 
@@ -117,4 +125,21 @@ CHECK LIST
 	  	struct person : named_tuple<pt::name_t, 
 		                            pt::age_t, 
 									pt::qualification_t>{};
+
+
+IMPLEMENTATION REQUIREMENTS and ANALYSIS
+========================================
+
+	- Columns
+		- there are 3 kinds of tags for columns, viz. 1) normal tags, 2) universal tags, 3) column
+			- only column could contain actual value.
+			- other tags cannot contain any value.
+			- so value of any expression involving column tags depends on the kind of tags.
+				- except column, other two tags shouldn't produce any value. 
+				- all three tags should be able to produce DB expression in a context which requires it.
+		-  so define a nested type 'tag_category':
+		  	   using tag_category = context_dependent_tag;         
+		  	   using tag_category = context_independent_tag;         
+		  	   using tag_category = context_independent_value_tag;         
+	- Tables
 

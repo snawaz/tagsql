@@ -3,10 +3,11 @@
 #pragma once
 
 
-#include <string>
 #include <tagsql/support/supported_types.h++>
+#include <string>
+#include <tagsql/core/tag_category.h++>
 #include <tagsql/core/meta_column.h++>
-#include <foam/strlib/format.h>
+
 
 namespace snawaz { namespace db { namespace fest
 {
@@ -33,6 +34,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,long int,false,true>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -41,12 +43,6 @@ namespace snawaz { namespace db { namespace fest
 			};
 
 			author_id_t() : base("author_id"){}
-
-			//TO-DO
-			//It is not going to work as of now, because this currently doesn't support && and || operators.
-			//Besides, we also need to make it work with mixed tags, as the other tags could of any time.
-			//The bottomline is : we need to come up with unified type-system for all kinds of tags that enables freedom of expression (i.e allow different kinds of tags to mix).
-			std::string operator==(long int const & value ) const { return ::foam::strlib::format("author.author_id = {0}", value); }
 
 			static char const* type_name() { return "long int"; }
 		};
@@ -64,6 +60,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_t,63>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -89,6 +86,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,short,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::smallint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -114,6 +112,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -139,6 +138,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -147,6 +147,32 @@ namespace snawaz { namespace db { namespace fest
 			};
 
 			created_t() : base("created"){}
+
+			static char const* type_name() { return "std::string"; }
+		};
+
+		/*
+		* + column_name    = author
+		* + column_type    = std::string <--- name [63]
+		* + table_name     = author
+		* + primary_key    = false
+		* + foreign_key    = false
+		* + nullable       = true
+		* + server_default = false
+		*/
+		struct author_t : ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>
+		{
+			using base = ::tagsql::metaspace::meta_column_t<schema::author_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_t,63>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
+
+			template<typename T>
+			struct named_member
+			{
+				T author;
+			};
+
+			author_t() : base("author"){}
 
 			static char const* type_name() { return "std::string"; }
 		};
@@ -169,6 +195,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,long int,false,true>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -194,6 +221,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_varying_t,128>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -219,6 +247,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,long int,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -244,6 +273,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -269,6 +299,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::timestamp_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -277,6 +308,32 @@ namespace snawaz { namespace db { namespace fest
 			};
 
 			created_t() : base("created"){}
+
+			static char const* type_name() { return "std::string"; }
+		};
+
+		/*
+		* + column_name    = author
+		* + column_type    = std::string <--- character varying [50]
+		* + table_name     = book
+		* + primary_key    = false
+		* + foreign_key    = false
+		* + nullable       = true
+		* + server_default = false
+		*/
+		struct author_t : ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>
+		{
+			using base = ::tagsql::metaspace::meta_column_t<schema::book_t,std::string,true,false>;
+			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_varying_t,50>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
+
+			template<typename T>
+			struct named_member
+			{
+				T author;
+			};
+
+			author_t() : base("author"){}
 
 			static char const* type_name() { return "std::string"; }
 		};
@@ -299,6 +356,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,false,true>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -324,6 +382,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -349,6 +408,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::review_t,long int,true,false>;
 			using sql_data_type = ::tagsql::support::types::single<::tagsql::support::types::bigint_t>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member
@@ -374,6 +434,7 @@ namespace snawaz { namespace db { namespace fest
 		{
 			using base = ::tagsql::metaspace::meta_column_t<schema::review_t,std::string,true,false>;
 			using sql_data_type = ::tagsql::support::types::multi<::tagsql::support::types::character_varying_t,2048>;
+			using tag_category  = ::tagsql::core::context_independent_tag;
 
 			template<typename T>
 			struct named_member

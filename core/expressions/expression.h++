@@ -3,6 +3,7 @@
 
 #include <string>
 #include <tagsql/column.h++>
+#include <tagsql/core/operators/all.h++>
 #include <foam/meta/typelist.h++>
 
 namespace tagsql
@@ -44,35 +45,24 @@ namespace tagsql
 		std::string _repr(std::true_type) const { return std::to_string(_value); }
 	};
 
-	struct and_t
-	{
-		template<typename T, typename U>
-		static auto apply(T && t, U && u) -> decltype ( t && u )
-		{
-			return t && u;
-		}
-
-		static constexpr char const * name = "AND";
-	};
-
 	template<typename Left, typename Right, typename Operator>
 	struct binary_expression
 	{
+		using self = binary_expression<Left, Right, Operator>;
+
 		Left _left;
 		Right _right;
 
-		using eval_type = decltype(Operator::apply(std::declval<Left>().eval(), std::declval<Right>().eval()));
+		using eval_type = decltype(Operator::eval(std::declval<Left>().eval(), std::declval<Right>().eval()));
 
 		auto eval() const -> eval_type
 		{
-			static bool value = Operator::apply(_left.eval(), _right.eval()); //ensure one time computation!
-			return value;
+			return Operator::eval(_left.eval(), _right.eval()); 
 		}
 
 		std::string repr() const
 		{
-			static std::string value = _left.repr() + " " +  Operator::operator_symbol + " " + _right.repr();
-			return value;
+			return Operator::repr(_left.repr(), _right.repr());
 		}
 
 		operator bool() const { return eval(); }
@@ -80,11 +70,10 @@ namespace tagsql
 		operator std::string() const { return repr(); }
 
 		template<typename OtherExpr>
-		auto operator && (OtherExpr const & other) -> binary_expression<binary_expression<Left, Right, Operator>, OtherExpr, and_t>
+		auto operator && (OtherExpr const & other) -> binary_expression<self, OtherExpr, operators::and_t>
 		{
 			return { *this, other };
 		}
 	};
-
 
 } // tagsql

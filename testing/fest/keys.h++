@@ -15,7 +15,7 @@ namespace snawaz { namespace db { namespace fest
 
 		using foreign_keys = std::tuple<>;
 
-		using all = std::tuple<author_id_t,name_t,age_t,modified_t,created_t>;
+		using all = std::tuple<author_id_t,name_t,age_t,modified_t,created_t,author_t>;
 
 		template<typename Tag>
 		std::string qualify(Tag const & tag) { return "author." + tag.column_name; }
@@ -28,7 +28,7 @@ namespace snawaz { namespace db { namespace fest
 
 		using foreign_keys = std::tuple<std::tuple<author_id_t,author_tag::author_id_t>>;
 
-		using all = std::tuple<book_id_t,title_t,author_id_t,modified_t,created_t>;
+		using all = std::tuple<book_id_t,title_t,author_id_t,modified_t,created_t,author_t>;
 
 		template<typename Tag>
 		std::string qualify(Tag const & tag) { return "book." + tag.column_name; }

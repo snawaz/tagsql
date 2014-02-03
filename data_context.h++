@@ -8,6 +8,7 @@
 
 #include <tagsql/query/select_query.h++>
 #include <tagsql/query/insert_query.h++>
+#include <tagsql/query/update_query.h++>
 #include <tagsql/core/formatter.h++>
 #include <tagsql/core/update_expression.h++>
 #include <tagsql/clauses/all.h++>
@@ -16,33 +17,6 @@
 
 namespace tagsql 
 {
-	namespace query
-	{
-		//insert
-		template<typename Table>
-		auto for_insert(Table const & item) -> std::string
-		{
-			formatting::sql_insert_formatter<Table> fmt { item };
-			return  ::foam::strlib::format("INSERT INTO {0} ({1}) VALUES ({2})", 
-											metaspace::meta_table<Table>::name(), 
-											tagsql::join(",", std::get<0>(fmt.output())),
-											tagsql::join(",", std::get<1>(fmt.output())));
-		}
-    
-		//update
-		template<typename Table, typename ... UpdateColumns>
-		auto for_update(UpdateColumns && ... columns) -> std::string
-		{
-			using tagsql::formatting::decorate;
-			static const std::vector<std::string> names { columns.column_name ... };
-			static const std::vector<std::string> values { decorate(columns.value) ... };
-			return ::foam::strlib::format("UPDATE {0} SET ({1}) = ({2})", 
-											metaspace::meta_table<Table>::name(),
-											::tagsql::join(",", names),
-											::tagsql::join(",", values));
-		}
-	}
-
 	template<typename ...Columns>
 	struct make_select_clause 
 	{
@@ -59,45 +33,46 @@ namespace tagsql
 				_connection.reset(new pqxx::connection(connection_string));
 			}
 
-			//select
+			//select (DB style)
 			template<typename ... Columns>
 			auto select(Columns ... ) -> typename make_select_clause<Columns...>::type
 			{
 				return {_connection };
 			}
     
-			//insert (DB syntax)
+			//insert (DB sytle)
 			template<typename Table>
 			auto insert_into(Table const &) -> insert_query<data_context, table_tag_t<Table>>
 			{
 				return {*this};
 			}
-			//insert (C++ container syntax)
+			
+			//insert (C++ container style)
 			template<typename Table>
-			auto insert(Table const & item) -> std::string
+			auto insert(Table const & item) -> pqxx::result
 			{
-				//return query::for_insert(item);
-				return execute(query::for_insert(item));
+				formatting::sql_insert_formatter<Table> fmt { item };
+				auto insert_command = ::foam::strlib::format("INSERT INTO {0} ({1}) VALUES ({2})",
+																				metaspace::meta_table<Table>::name(), 
+																				tagsql::join(",", std::get<0>(fmt.output())),
+																				tagsql::join(",", std::get<1>(fmt.output())));
+				return execute(insert_command);
 			}
     
-			//update
-			template<typename Table, typename ... UpdateColumns>
-			auto update(UpdateColumns && ... columns) -> update_expression<Table>
+			//update (DB style)
+			template<typename Table>
+			auto update(Table const &) -> update_query<data_context, table_tag_t<Table>>
 			{
-				return { _connection, query::for_update<Table>(std::forward<UpdateColumns>(columns)...) };
+				return { *this };
 			}
-		
-		private:
-			
-			template<typename DataContext, typename Table, typename ... ColumnTags>
-			friend struct insert_values;
-
-			std::string execute(std::string query)
+	
+			//execute raw query
+			auto execute(std::string query) -> pqxx::result
 			{
 				pqxx::work transaction { *_connection } ;
-				transaction.exec(query);
+				auto ret = transaction.exec(query);
 				transaction.commit();
-				return query;
+				return ret;
 			}
 		private:
 			std::shared_ptr<pqxx::connection> _connection;

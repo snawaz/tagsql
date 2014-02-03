@@ -9,7 +9,7 @@ const snawaz::db::fest::schema::book_t   _book{};
 const snawaz::db::fest::schema::review_t _review{};
 
 using namespace snawaz::db::fest;
-using namespace snawaz::db::fest::universal_tags;
+using namespace snawaz::db::fest::generic_tags;
 
 template<typename NamedTuple>
 void fff(NamedTuple item)
@@ -36,9 +36,9 @@ void g(tagsql::named_tuple<author_tag::name_t> item)
 	std::cout << "g() => " << item << std::endl;
 }
 
-void test_universal_tags(tagsql::data_context & dc)
+void test_generic_tags(tagsql::data_context & dc)
 {
-	//namespace t=snawaz::db::fest::universal_tags;
+	//namespace t=snawaz::db::fest::generic_tags;
 
 	std::cout << dc.select(created, book.title).from(book) << std::endl;
 	std::cout << dc.select(created).from(author) << std::endl;
@@ -129,44 +129,40 @@ void test_join(tagsql::data_context & dc)
 }
 #endif
 
-template<typename Iterator>
-void insert_all(Iterator begin, Iterator end)
-{
-	while ( begin != end )
-	{
-		dc.insert(*begin);
-		++begin;
-	}
-}
-template<typename Container>
-void insert_all(Container && c)
-{
-	using std::begin;
-	using std::end;
-	insert_all(begin(c), end(c));
-}
-
 void test_insert(tagsql::data_context & dc)
 {
 	using namespace snawaz::db::fest::schema;
 	author_t a {};
 	a.name = "Saurabh Khan";
-	a.age = 20000;
-	//std::cout << dc.insert(a) << std::endl;
+	int x = (a.age = 20000);
+	//std::cout << x << std::endl;
+	//dc.insert(a);
 
 	//tagsql::transaction xtras(dc);
 
 	//db syntax, more rows at once
 	//dc.insert_into(author)(_author.name, _author.age).values("C++", 11).values("C#", 12).values("Java", 13); //.commit();
 
+
+	//using types = ::foam::meta::typelist<author_t, review_t>; 
+	using types = ::foam::meta::typelist<book_t, review_t>; 
+	//using types = ::foam::meta::typelist<author_t, book_t, review_t>; 
+	auto e1 = author == author; //std::string("Sarfaraz Nawaz");
+	std::cout << e1.repr(types()) << std::endl;
 	//db syntax
 	//dc.insert_into(book).columns(_book.title, _book.author_id).values("C++", 10).commit();             
 
-#if NOT_DONE_YET	
+#if 1 //NOT_DONE_YET	
 	//improved syntax (inspired from UPDATE command)
-	dc.insert_into(author).set(_author.name = "C++", _author.age = 10);            
+	//std::cout << "before insert_into() a = " << a << std::endl;
+	//dc.insert_into(author).set(a.age = 10);            
+	//dc.insert_into(author).set(a.name = "C++", a.age = 10).set(a.age = 100, a.name = "Java");
+	//std::cout << "after insert_into() a = " << a << std::endl;
 	//dc.insert_into(author).set(_author.name = "C++", _author.age = 10).set(...).set( ... so on ... );            
 #endif 
+	//book_t b{};	
+	//dc.update(author).set(a.age = 110).where(b.author_id == 1);
+	//dc.update(author).set(a.age = 110).where(a.author_id == 2);
 
 	//xtrans.commit(); OR xtrans.rollback(); or whatever makes sense
 }
@@ -176,7 +172,7 @@ int main()
     try
     {
 		tagsql::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
-		//test_universal_tags(dc);
+		//test_generic_tags(dc);
 #if 0		
 		test_select(dc);
 		test_join(dc);

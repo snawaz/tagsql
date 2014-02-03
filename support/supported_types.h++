@@ -6,7 +6,7 @@
 #include <foam/meta/typelist.h++>
 #include <string>
 #include <tagsql/column.h++>
-#include <tagsql/operators/all.h++>
+#include <tagsql/core/operators/all.h++>
 
 namespace tagsql { namespace support
 {

@@ -3,12 +3,17 @@
 #pragma once
 
 
+#include <tagsql/core/tag_category.h++>
 #include <tagsql/core/tiny_types.h++>
+#include <tagsql/core/expressions/expression.h++>
+#include <tagsql/core/expressions/generic_binary_expression.h++>
+#include <tagsql/core/meta_table_base.h++>
+#include <tagsql/anatomy/generic_tags.h++>
 #include <testing/fest/tags_impl.h++>
 #include <testing/fest/table.h++>
 
 
-namespace snawaz { namespace db { namespace fest { namespace universal_tags
+namespace snawaz { namespace db { namespace fest { namespace generic_tags
 {
 	namespace detail
 	{
@@ -18,6 +23,16 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 		template<>
 		struct get_age<schema::author_t> { using type = author_tag::age_t; };
+
+		//get meta-functions for author
+		template<typename Table>
+		struct get_author;
+
+		template<>
+		struct get_author<schema::author_t> { using type = author_tag::author_t; };
+
+		template<>
+		struct get_author<schema::book_t> { using type = book_tag::author_t; };
 
 		//get meta-functions for author_id
 		template<typename Table>
@@ -97,24 +112,57 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	} //detail
 
-	static const struct age_u
+	static struct age_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::author_t>;
 
 		template<typename Table>
 		struct get_column : detail::get_age<Table>{};
 
+		template<typename TableList>
+		std::string repr(TableList) const 
+		{
+			using table = typename tagsql::resolve_table<TableList, age_g>::type;
+			return qualify(typename get_column<table>::type()); 
+		}
+
+		template<typename Other> //Other could be tag or literal value
+		auto operator==(Other const & value) const -> tagsql::generic_binary_expression<age_g, tagsql::literal_expression<Other>, tagsql::generic_equal_t>
+		{
+			return {*this, value};
+		}
+
 	}age{};
 
-	static const struct author_u
+	static struct author_g
 	{
-		using _is_column = std::false_type;
+		using _is_column = std::true_type;
 		using _is_table  = std::true_type;
 		using _is_unique = ::tagsql::null;
+
+		using tag_category  = ::tagsql::core::context_dependent_tag;
+		using tables = ::foam::meta::typelist<schema::author_t,schema::book_t>;
+
+		template<typename Table>
+		struct get_column : detail::get_author<Table>{};
+
+		template<typename TableList>
+		std::string repr(TableList) const 
+		{
+			using table = typename ::tagsql::resolve_table<TableList, author_g>::type;
+			return qualify(typename get_column<table>::type()); 
+		}
+
+		template<typename Other> //Other could be tag or literal value
+		auto operator==(Other const & value) const -> ::tagsql::generic_binary_expression<author_g, ::tagsql::generic_expression<Other>, tagsql::generic_equal_t>
+		{
+			return {*this, value};
+		}
 
 		using table = schema::author_t;
 
@@ -123,15 +171,17 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 		author_tag::age_t                             age;                     
 		author_tag::modified_t                        modified;                
 		author_tag::created_t                         created;                 
+		author_tag::author_t                          author;                  
 
 	}author{};
 
-	static const struct author_id_u
+	static struct author_id_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::false_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::author_t,schema::book_t>;
 
 		template<typename Table>
@@ -139,7 +189,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}author_id{};
 
-	static const struct book_u
+	static struct book_g
 	{
 		using _is_column = std::false_type;
 		using _is_table  = std::true_type;
@@ -152,15 +202,17 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 		book_tag::author_id_t                         author_id;               
 		book_tag::modified_t                          modified;                
 		book_tag::created_t                           created;                 
+		book_tag::author_t                            author;                  
 
 	}book{};
 
-	static const struct book_id_u
+	static struct book_id_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::false_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::book_t,schema::review_t>;
 
 		template<typename Table>
@@ -168,12 +220,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}book_id{};
 
-	static const struct comment_u
+	static struct comment_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::review_t>;
 
 		template<typename Table>
@@ -181,12 +234,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}comment{};
 
-	static const struct created_u
+	static struct created_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::false_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::author_t,schema::book_t>;
 
 		template<typename Table>
@@ -194,12 +248,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}created{};
 
-	static const struct modified_u
+	static struct modified_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::false_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::author_t,schema::book_t>;
 
 		template<typename Table>
@@ -207,12 +262,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}modified{};
 
-	static const struct name_u
+	static struct name_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::author_t>;
 
 		template<typename Table>
@@ -220,7 +276,7 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}name{};
 
-	static const struct review_u
+	static struct review_g
 	{
 		using _is_column = std::false_type;
 		using _is_table  = std::true_type;
@@ -235,12 +291,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}review{};
 
-	static const struct review_id_u
+	static struct review_id_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::review_t>;
 
 		template<typename Table>
@@ -248,12 +305,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}review_id{};
 
-	static const struct reviewer_id_u
+	static struct reviewer_id_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::review_t>;
 
 		template<typename Table>
@@ -261,12 +319,13 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}reviewer_id{};
 
-	static const struct title_u
+	static struct title_g
 	{
 		using _is_column = std::true_type;
 		using _is_table  = std::false_type;
 		using _is_unique = std::true_type;
 
+		using tag_category  = ::tagsql::core::context_dependent_tag;
 		using tables = ::foam::meta::typelist<schema::book_t>;
 
 		template<typename Table>
@@ -274,4 +333,4 @@ namespace snawaz { namespace db { namespace fest { namespace universal_tags
 
 	}title{};
 
-}}}} //snawaz # db # fest # universal_tags
+}}}} //snawaz # db # fest # generic_tags
