@@ -15,6 +15,19 @@ namespace tagsql
 		{
 			return std::move(right) + " = " + std::move(left);
 		}
+
+		template<typename Left, typename Right>
+		struct check_compatibility
+		{
+			template<typename L, typename R>
+			static auto compare(L && l, R && r) -> decltype(l == r, std::true_type()); 
+
+			static auto compare(...) -> std::false_type;
+
+			static constexpr bool value = decltype(compare(std::declval<Left>(), std::declval<Right>()))::value;
+
+			static_assert(!value, "incompatible operands : cannot be compared using == ");
+		};
 	};
 
 }

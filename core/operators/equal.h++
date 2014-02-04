@@ -22,7 +22,7 @@ namespace tagsql { namespace operators
 		{
 			return left + " = " + right;
 		}
-
+#if 1
 		auto operator==(literal_type value) const -> binary_expression<column_expression<Tag>, literal_expression<literal_type>, equal_t<Tag>>
 		{
 			return { static_cast<column<Tag> const&>(*this), value }; 
@@ -34,6 +34,14 @@ namespace tagsql { namespace operators
 			//todo: static checks!
 			return { static_cast<column<Tag> const&>(*this), other }; 
 		}
+#else
+		auto operator==(literal_type value) const -> binary_expression<column_expression<Tag>, literal_expression<literal_type>, equal_t<Tag>>
+		{
+			return { static_cast<column<Tag> const&>(*this), value }; 
+		}
+
+	private:
+#endif		
 	};
 
 }} //tagsql # operators

@@ -12,6 +12,7 @@
 
 #include <tagsql/common/exceptions.h++>
 #include <tagsql/core/tag_category.h++>
+#include <tagsql/core/productive_tag.h++>
 #include <tagsql/core/deferred_assignment.h++>
 
 #include <pqxx/pqxx>
@@ -37,7 +38,7 @@ namespace tagsql
 	};
 
 	template<typename Tag>
-	class column : public Tag::sql_data_type::template operators<Tag>
+	class column : public Tag::sql_data_type::template operators<Tag>, column_productive_tag_t<Tag>
 	{
 		public:
 			using self_type     = column<Tag>;
@@ -46,21 +47,25 @@ namespace tagsql
 			using tag_type      = Tag;
 			using tag_category  = core::context_independent_value_tag;
 			using _is_column    = std::true_type;
-  
+ 
+			using column_productive_tag_t<Tag>::repr;
+
 			static constexpr bool is_nullable    = tag_type::is_nullable; 
 			static constexpr bool server_default = tag_type::server_default; 
 			
-			column() {}
+			column() : _data() {}
 			
-			column(value_type value) : _data(std::move(value)) 
+			explicit column(value_type value) : _data(std::move(value)) 
 			{ 
 			}
+
 			template<typename U, typename Unused=typename std::enable_if<!bare::is_same<U,pqxx::field>::value>::type >
-			column(U && value) 
+			explicit column(U && value) 
 			{
 				set(std::forward<U>(value));
 			}
-			column(pqxx::field const & field) 
+
+			explicit column(pqxx::field const & field) 
 			{ 
 				try
 				{

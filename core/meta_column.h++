@@ -46,8 +46,15 @@ namespace tagsql { namespace metaspace
 		{
 			return {column_name, value};
 		}
+
+		std::string repr() const 
+		{
+			return meta_table<Table>::name() + "." + column_name;
+		}
+
 	};
     
+#if 0
 	template<typename Table, typename ColumnType, bool Nullable, bool ServerDefault>
 	struct meta_column_special: meta_column<Table, ColumnType, Nullable, ServerDefault>
 	{
@@ -59,5 +66,10 @@ namespace tagsql { namespace metaspace
 	using meta_column_t = typename std::conditional<std::is_fundamental<ColumnType>::value, 
 		  											meta_column<Table,ColumnType,Nullable,ServerDefault>,
 		  											meta_column_special<Table,ColumnType,Nullable,ServerDefault>>::type;
+#else
+	template<typename Table, typename ColumnType, bool Nullable, bool ServerDefault>
+	using meta_column_t = meta_column<Table,ColumnType,Nullable,ServerDefault>;
+#endif
+
     
 }} //tagsql # metaspace

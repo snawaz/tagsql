@@ -19,6 +19,13 @@ namespace tagsql
 		template<typename TableList>
 		std::string repr(TableList const & tablelist) const
 		{
+			using left_type = decltype(_left.eval(tablelist));
+			using right_type = decltype(_right.eval(tablelist));
+			//Left x = this;
+			//left_type y = this;
+			//Right a = this;
+			//right_type b = this;
+			int x[Op::template check_compatibility<left_type, right_type>::value] = this;
 			return Op::repr(_left.repr(tablelist), _right.repr(tablelist));
 		}
 
@@ -33,14 +40,8 @@ namespace tagsql
 	template<typename Value>
 	struct generic_expression
 	{
-	public:
-		generic_expression(Value v) : _value(std::move(v)) {}
-
-		template<typename TableList>
-		std::string repr(TableList const & tablelist) const
-		{
-			return repr_impl(tablelist, static_cast<Value*>(0));
-		}
+	private:
+		Value _value;
 	private:
 		template<typename TableList, typename T, typename U = typename T::tag_category>
 		std::string repr_impl(TableList const & tablelist, T*) const
@@ -52,7 +53,29 @@ namespace tagsql
 		{
 			return literal_expression<Value> { _value }.repr();
 		}
-	private:
-		Value _value;
+		template<typename TableList, typename T, typename U = typename T::tag_category>
+		auto eval_impl(TableList const & tablelist, T*) const -> decltype(this->_value.eval(tablelist))
+		{
+			return _value.eval(tablelist);
+		}
+		template<typename TableList>
+		auto eval_impl(TableList const &, ...) const -> Value
+		{
+			//static_assert(always_wrong<TableList>::value, "expression involving generic tag(s) cannot produce value."); 
+			return _value;
+		}
+	public:
+		generic_expression(Value v) : _value(std::move(v)) {}
+
+		template<typename TableList>
+		std::string repr(TableList const & tablelist) const
+		{
+			return repr_impl(tablelist, static_cast<Value*>(0));
+		}
+		template<typename TableList>
+		auto eval(TableList const & tablelist) const -> decltype(this->eval_impl(tablelist, static_cast<Value*>(0))) 
+		{
+			return eval_impl(tablelist, static_cast<Value*>(0));
+		}
 	};
 }

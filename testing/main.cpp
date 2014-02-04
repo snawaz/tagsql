@@ -39,13 +39,42 @@ void g(tagsql::named_tuple<author_tag::name_t> item)
 void test_generic_tags(tagsql::data_context & dc)
 {
 	//namespace t=snawaz::db::fest::generic_tags;
+	using namespace snawaz::db::fest::schema;
+	namespace at = snawaz::db::fest::author_tag;
 
-	std::cout << dc.select(created, book.title).from(book) << std::endl;
-	std::cout << dc.select(created).from(author) << std::endl;
+	author_t a {};
+	a.name = "Saurabh Khan";
+	int x = (a.age = 20000);
+	std::cout << a.name.repr() << std::endl;
+	std::cout << (a.name == "Nawaz").repr() << std::endl;
+//	std::cout << (a.name == "Nawaz" and a.age == 1000).repr() << std::endl;
+	//std::cout << x << std::endl;
 
-	std::cout << dc.select(book.title).from(book) << std::endl;
+	using types = ::foam::meta::typelist<author_t, review_t>; 
+	//using types = ::foam::meta::typelist<book_t, review_t>; 
+	//using types = ::foam::meta::typelist<author_t, book_t, review_t>; 
+	//decltype(age.eval(types())) xxx = "hehe";
+	auto e1 = age == age; //std::string("Sarfaraz Nawaz");
+	//auto e2 = author == author; //std::string("Sarfaraz Nawaz");
+	//auto e3 = age == author.age; //std::string("Sarfaraz Nawaz");
+	//auto e4 = age == author;
+	//auto e4 = at::name == at::name;
+	std::cout << e1.repr(types()) << std::endl;
+	//std::cout << e2.repr(types()) << std::endl;
+	//std::cout << e3.repr(types()) << std::endl;
+	//std::cout << e4.repr(types()) << std::endl;
+
+	//if ( age ) {}  //MUST ERROR
+	//if ( e1 ) {}  //MUST ERROR
+	//if ( author.age) {}  //MUST ERROR
+
+	//std::cout << dc.select(created, book.title).from(book) << std::endl;
+	//std::cout << dc.select(created).from(author) << std::endl;
+	//std::cout << dc.select(book.title).from(book) << std::endl;
+
 	//std::cout << (author.author_id == 10) << std::endl;
 	//std::cout << dc.select(book.title, author.name).from(book).join(author).on(author.author_id == 10) << std::endl;
+	
 }
 
 #if 0
@@ -134,8 +163,7 @@ void test_insert(tagsql::data_context & dc)
 	using namespace snawaz::db::fest::schema;
 	author_t a {};
 	a.name = "Saurabh Khan";
-	int x = (a.age = 20000);
-	//std::cout << x << std::endl;
+	
 	//dc.insert(a);
 
 	//tagsql::transaction xtras(dc);
@@ -151,20 +179,6 @@ void test_insert(tagsql::data_context & dc)
 		std::cout << "DEMO : " << item.name << ", " << item.age << std::endl;
 	}
 #endif
-
-	using types = ::foam::meta::typelist<author_t, review_t>; 
-	//using types = ::foam::meta::typelist<book_t, review_t>; 
-	//using types = ::foam::meta::typelist<author_t, book_t, review_t>; 
-	auto e1 = age == age; //std::string("Sarfaraz Nawaz");
-	auto e2 = author == author; //std::string("Sarfaraz Nawaz");
-	auto e3 = age == author.age; //std::string("Sarfaraz Nawaz");
-	std::cout << e1.repr(types()) << std::endl;
-	std::cout << e2.repr(types()) << std::endl;
-	std::cout << e3.repr(types()) << std::endl;
-
-	//if ( age ) {}  //MUST ERROR
-	//if ( e1 ) {}  //MUST ERROR
-	//if ( author.age) {}  //MUST ERROR
 
 	//db syntax
 	//dc.insert_into(book).columns(_book.title, _book.author_id).values("C++", 10).commit();             
@@ -189,12 +203,12 @@ int main()
     try
     {
 		tagsql::data_context dc("test", "localhost", 5432, "snawaz", "itsnotme");
-		//test_generic_tags(dc);
-#if 0		
+		test_generic_tags(dc);
+#if 0	
+		test_insert(dc);
 		test_select(dc);
 		test_join(dc);
 #endif		
-		test_insert(dc);
     }
     catch(std::exception const & e)
     {
