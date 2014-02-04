@@ -157,10 +157,14 @@ void test_insert(tagsql::data_context & dc)
 	//using types = ::foam::meta::typelist<author_t, book_t, review_t>; 
 	auto e1 = age == age; //std::string("Sarfaraz Nawaz");
 	auto e2 = author == author; //std::string("Sarfaraz Nawaz");
-	auto e3 = age == author; //std::string("Sarfaraz Nawaz");
+	auto e3 = age == author.age; //std::string("Sarfaraz Nawaz");
 	std::cout << e1.repr(types()) << std::endl;
 	std::cout << e2.repr(types()) << std::endl;
 	std::cout << e3.repr(types()) << std::endl;
+
+	//if ( age ) {}  //MUST ERROR
+	//if ( e1 ) {}  //MUST ERROR
+	//if ( author.age) {}  //MUST ERROR
 
 	//db syntax
 	//dc.insert_into(book).columns(_book.title, _book.author_id).values("C++", 10).commit();             

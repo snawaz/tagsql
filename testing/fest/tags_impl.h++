@@ -8,7 +8,6 @@
 #include <tagsql/core/tag_category.h++>
 #include <tagsql/core/meta_column.h++>
 
-
 namespace snawaz { namespace db { namespace fest
 {
 	namespace schema
@@ -97,6 +96,9 @@ namespace snawaz { namespace db { namespace fest
 			age_t() : base("age"){}
 
 			static char const* type_name() { return "short"; }
+
+			template<typename TableList>
+			static std::string repr(TableList) { return "author.age"; }
 		};
 
 		/*

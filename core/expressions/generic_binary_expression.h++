@@ -6,6 +6,7 @@
 #include <tagsql/core/expressions/expression.h++>
 #include <tagsql/core/operators/generic_all.h++>
 #include <tagsql/anatomy/generic_tags.h++>
+#include <tagsql/core/tiny_types.h++>
 
 namespace tagsql
 {
@@ -19,6 +20,13 @@ namespace tagsql
 		std::string repr(TableList const & tablelist) const
 		{
 			return Op::repr(_left.repr(tablelist), _right.repr(tablelist));
+		}
+
+		template<typename T>
+		operator T() const 
+		{ 
+			static_assert(always_wrong<T>::value, "expression involving generic tag(s) cannot produce value."); 
+			return std::declval<T>(); //smarty! the linker will not even get a chance to look for the definition!
 		}
 	};
 

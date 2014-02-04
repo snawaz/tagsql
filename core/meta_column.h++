@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <string>
 #include <array>
+#include <tagsql/core/unproductive_tag.h++>
+
 
 namespace tagsql { namespace metaspace
 {
@@ -27,7 +29,7 @@ namespace tagsql { namespace metaspace
 	};
     
 	template<typename Table, typename ColumnType, bool Nullable, bool ServerDefault>
-	struct meta_column
+	struct meta_column : public unproductive_tag_t
 	{
 		using table_type  = Table;
 		using column_type = ColumnType;

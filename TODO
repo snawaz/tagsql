@@ -139,11 +139,18 @@ IMPLEMENTATION REQUIREMENTS and ANALYSIS
 			using tag_category = context_independent_tag;         //CIT
 			using tag_category = context_independent_value_tag;   //CIVT
 
-		- interface for all tags
-			interface   __tagname__
+		- interface for all tags. note that a tag is also an expression.
+			interface   __tagname__ : ___expression__
 			{
 				using tag_category = implementation-defined; 
 				std::string column_name(bool qualify);  //qualify has no effect on generic_tag, as it will return column_name without qualification.
+			};
+		- interface for all expressions.
+			interface  __exression__ 
+			{
+				template<typename T> T eval() const;
+				std::string repr() const;
+				template<typename T> operator T() const { return eval<T>(); }
 			};
 
 		- expressions : all expressions can produce SQL repr; few can produce values too.
